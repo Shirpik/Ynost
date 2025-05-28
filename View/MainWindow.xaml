@@ -6,7 +6,10 @@
         xmlns:local="clr-namespace:Ynost"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-
-    </Grid>
+    <StackPanel>
+        <Grid Height="37" Background="White">
+            <TextBlock x:Name="TagType" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="22" FontFamily="Bahnschrift SemiBold"><Run Language="ru-ru" Text="Аттестат"/></TextBlock>
+        </Grid>
+        <Grid/>
+    </StackPanel>
 </Window>
