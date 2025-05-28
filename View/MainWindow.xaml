@@ -18,9 +18,18 @@
         <!-- Список преподавателей -->
         <StackPanel Grid.Column="0" Background="#f3f6ff">
             <TextBlock Text="Преподаватели" FontSize="16" FontWeight="Bold" Margin="8"/>
-            <DataGrid ItemsSource="{Binding Teachers}"
-                      SelectedItem="{Binding SelectedTeacher}"
-                      AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True" Margin="4">
+            <StackPanel Margin="4,4,4,4">
+                <TextBlock Text="Поиск:" HorizontalAlignment="Left" Margin="4,0,0,4"/>
+                <TextBox x:Name="SearchBox"
+             TextChanged="SearchBox_TextChanged"/>
+            </StackPanel>
+            <DataGrid x:Name="TeachersGrid"
+            ItemsSource="{Binding Teachers}"
+            SelectedItem="{Binding SelectedTeacher}"
+            AutoGenerateColumns="False"
+            CanUserAddRows="False"
+            IsReadOnly="True"
+            Margin="4">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="ФИО" Binding="{Binding FullName}" Width="*"/>
                 </DataGrid.Columns>
