@@ -1,12 +1,8 @@
 ﻿<Window x:Class="Ynost.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="clr-namespace:Ynost.ViewModels"
-        Title="Ynost" Height="800" Width="1200">
-
-    <Window.DataContext>
-        <vm:MainViewModel/>
-    </Window.DataContext>
+        Title="Ynost" Height="800" Width="1200"
+        Loaded="MainWindow_Loaded">
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -15,178 +11,358 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Список преподавателей -->
+        <!-- Левая панель -->
         <StackPanel Grid.Column="0" Background="#f3f6ff">
-            <TextBlock Text="Преподаватели" FontSize="16" FontWeight="Bold" Margin="8"/>
-            <StackPanel Margin="4,4,4,4">
-                <TextBlock Text="Поиск:" HorizontalAlignment="Left" Margin="4,0,0,4"/>
+            <TextBlock Text="Преподаватели"
+                       FontSize="16"
+                       FontWeight="Bold"
+                       Margin="8"/>
+
+            <StackPanel Margin="4">
+                <TextBlock Text="Поиск:"
+                           Margin="4,0,0,4"/>
                 <TextBox x:Name="SearchBox"
-             TextChanged="SearchBox_TextChanged"/>
+                         TextChanged="SearchBox_TextChanged"
+                         Margin="4,0"/>
             </StackPanel>
+
             <DataGrid x:Name="TeachersGrid"
-            ItemsSource="{Binding Teachers}"
-            SelectedItem="{Binding SelectedTeacher}"
-            AutoGenerateColumns="False"
-            CanUserAddRows="False"
-            IsReadOnly="True"
-            Margin="4">
+                      ItemsSource="{Binding Teachers}"
+                      SelectedItem="{Binding SelectedTeacher}"
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      IsReadOnly="True"
+                      Margin="4">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="ФИО" Binding="{Binding FullName}" Width="*"/>
+                    <DataGridTextColumn Header="ФИО"
+                                        Binding="{Binding FullName}"
+                                        Width="*"/>
                 </DataGrid.Columns>
             </DataGrid>
         </StackPanel>
 
-        <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="#B0B0B0"/>
+        <!-- Сплиттер -->
+        <GridSplitter Grid.Column="1"
+                      Width="5"
+                      Background="#B0B0B0"/>
 
         <!-- Правая прокручиваемая панель -->
-        <ScrollViewer Grid.Column="2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Column="2"
+                      HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="10">
 
                 <!-- 1. Итоговый аттестат -->
-                <TextBlock Text="1. Итоговый аттестат" FontWeight="Bold" Margin="0,8"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.AcademicResults}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,12">
+                <TextBlock Text="1. Итоговый аттестат"
+                           FontWeight="Bold"
+                           Margin="0,8"/>
+                <DataGrid ItemsSource="{Binding SelectedTeacher.AcademicResults}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          Margin="0,0,0,12">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Год" Binding="{Binding Year}" Width="60"/>
-                        <DataGridTextColumn Header="Предмет" Binding="{Binding Subject}" Width="150"/>
-                        <DataGridTextColumn Header="Сем 1" Binding="{Binding AvgSem1}" Width="70"/>
-                        <DataGridTextColumn Header="Сем 2" Binding="{Binding AvgSem2}" Width="70"/>
-                        <DataGridTextColumn Header="Динамика" Binding="{Binding Dynamics}" Width="80"/>
+                        <DataGridTextColumn Header="Год"
+                                            Binding="{Binding Year}"
+                                            Width="60"/>
+                        <DataGridTextColumn Header="Предмет"
+                                            Binding="{Binding Subject}"
+                                            Width="150"/>
+                        <DataGridTextColumn Header="Сем 1"
+                                            Binding="{Binding AvgSem1}"
+                                            Width="70"/>
+                        <DataGridTextColumn Header="Сем 2"
+                                            Binding="{Binding AvgSem2}"
+                                            Width="70"/>
+                        <DataGridTextColumn Header="Динамика"
+                                            Binding="{Binding Dynamics}"
+                                            Width="80"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
                 <!-- 2. ЕГЭ -->
                 <TextBlock Text="2. ЕГЭ" FontWeight="Bold" Margin="0,8"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.EgeResults}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,12">
+                <DataGrid ItemsSource="{Binding SelectedTeacher.EgeResults}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          Margin="0,0,0,12">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Предмет" Binding="{Binding Subject}" Width="120"/>
-                        <DataGridTextColumn Header="Класс" Binding="{Binding Class}" Width="60"/>
-                        <DataGridTextColumn Header="Всего" Binding="{Binding Total}" Width="60"/>
-                        <DataGridTextColumn Header="% 61‑80" Binding="{Binding Pct61to80}" Width="80"/>
-                        <DataGridTextColumn Header="% Fail" Binding="{Binding PctFail}" Width="70"/>
+                        <DataGridTextColumn Header="Предмет"
+                                            Binding="{Binding Subject}"
+                                            Width="120"/>
+                        <DataGridTextColumn Header="Класс"
+                                            Binding="{Binding Class}"
+                                            Width="60"/>
+                        <DataGridTextColumn Header="Всего"
+                                            Binding="{Binding Total}"
+                                            Width="60"/>
+                        <DataGridTextColumn Header="% 61-80"
+                                            Binding="{Binding Pct61to80}"
+                                            Width="80"/>
+                        <DataGridTextColumn Header="% Fail"
+                                            Binding="{Binding PctFail}"
+                                            Width="70"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
                 <!-- 3. ОГЭ -->
                 <TextBlock Text="3. ОГЭ" FontWeight="Bold" Margin="0,8"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.OgeResults}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,12">
+                <DataGrid ItemsSource="{Binding SelectedTeacher.OgeResults}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          Margin="0,0,0,12">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Предмет" Binding="{Binding Subject}" Width="120"/>
-                        <DataGridTextColumn Header="Класс" Binding="{Binding Class}" Width="60"/>
-                        <DataGridTextColumn Header="Всего" Binding="{Binding Total}" Width="60"/>
-                        <DataGridTextColumn Header="5" Binding="{Binding Mark5}" Width="40"/>
-                        <DataGridTextColumn Header="Средний" Binding="{Binding Avg}" Width="70"/>
+                        <DataGridTextColumn Header="Предмет"
+                                            Binding="{Binding Subject}"
+                                            Width="120"/>
+                        <DataGridTextColumn Header="Класс"
+                                            Binding="{Binding Class}"
+                                            Width="60"/>
+                        <DataGridTextColumn Header="Всего"
+                                            Binding="{Binding Total}"
+                                            Width="60"/>
+                        <DataGridTextColumn Header="5"
+                                            Binding="{Binding Mark5}"
+                                            Width="40"/>
+                        <DataGridTextColumn Header="Средний"
+                                            Binding="{Binding Avg}"
+                                            Width="70"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
                 <!-- 4. ВПР / НОКО / PISA -->
-                <TextBlock Text="4. ВПР / НОКО / PISA" FontWeight="Bold" Margin="0,8"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.IndependentAssessments}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,12">
+                <TextBlock Text="4. ВПР / НОКО / PISA"
+                           FontWeight="Bold"
+                           Margin="0,8"/>
+                <DataGrid ItemsSource="{Binding SelectedTeacher.IndependentAssessments}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          Margin="0,0,0,12">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Процедура" Binding="{Binding Procedure}" Width="120"/>
-                        <DataGridTextColumn Header="Год" Binding="{Binding Date, StringFormat=yyyy}" Width="60"/>
-                        <DataGridTextColumn Header="Класс/Предмет" Binding="{Binding ClassSubject}" Width="140"/>
-                        <DataGridTextColumn Header="Успешно" Binding="{Binding Passed}" Width="70"/>
+                        <DataGridTextColumn Header="Процедура"
+                                            Binding="{Binding Procedure}"
+                                            Width="120"/>
+                        <DataGridTextColumn Header="Год"
+                                            Binding="{Binding Date, StringFormat=yyyy}"
+                                            Width="60"/>
+                        <DataGridTextColumn Header="Класс/Предмет"
+                                            Binding="{Binding ClassSubject}"
+                                            Width="140"/>
+                        <DataGridTextColumn Header="Успешно"
+                                            Binding="{Binding Passed}"
+                                            Width="70"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
                 <!-- 5. Профориентация -->
-                <TextBlock Text="5. Профориентация" FontWeight="Bold" Margin="0,8"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.SelfDeterminations}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,12">
+                <TextBlock Text="5. Профориентация"
+                           FontWeight="Bold"
+                           Margin="0,8"/>
+                <DataGrid ItemsSource="{Binding SelectedTeacher.SelfDeterminations}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          Margin="0,0,0,12">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Уровень" Binding="{Binding Level}" Width="100"/>
-                        <DataGridTextColumn Header="Мероприятие" Binding="{Binding Name}" Width="180"/>
-                        <DataGridTextColumn Header="Роль" Binding="{Binding Role}" Width="100"/>
+                        <DataGridTextColumn Header="Уровень"
+                                            Binding="{Binding Level}"
+                                            Width="100"/>
+                        <DataGridTextColumn Header="Мероприятие"
+                                            Binding="{Binding Name}"
+                                            Width="180"/>
+                        <DataGridTextColumn Header="Роль"
+                                            Binding="{Binding Role}"
+                                            Width="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <!-- 6. Олимпиады обучающихся -->
-                <TextBlock Text="6. Олимпиады / конкурсы обучающихся" FontWeight="Bold" Margin="0,8"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.StudentOlympiads}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,12">
+                <!-- 6. Олимпиады / конкурсы обучающихся -->
+                <TextBlock Text="6. Олимпиады / конкурсы обучающихся"
+                           FontWeight="Bold"
+                           Margin="0,8"/>
+                <DataGrid ItemsSource="{Binding SelectedTeacher.StudentOlympiads}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          Margin="0,0,0,12">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Уровень" Binding="{Binding Level}" Width="100"/>
-                        <DataGridTextColumn Header="Название" Binding="{Binding Name}" Width="160"/>
-                        <DataGridTextColumn Header="Форма" Binding="{Binding Form}" Width="70"/>
-                        <DataGridTextColumn Header="Ученик" Binding="{Binding Cadet}" Width="120"/>
-                        <DataGridTextColumn Header="Результат" Binding="{Binding Result}" Width="100"/>
+                        <DataGridTextColumn Header="Уровень"
+                                            Binding="{Binding Level}"
+                                            Width="100"/>
+                        <DataGridTextColumn Header="Название"
+                                            Binding="{Binding Name}"
+                                            Width="160"/>
+                        <DataGridTextColumn Header="Форма"
+                                            Binding="{Binding Form}"
+                                            Width="70"/>
+                        <DataGridTextColumn Header="Ученик"
+                                            Binding="{Binding Cadet}"
+                                            Width="120"/>
+                        <DataGridTextColumn Header="Результат"
+                                            Binding="{Binding Result}"
+                                            Width="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <!-- 7. Работа жюри -->
-                <TextBlock Text="7. Работа жюри" FontWeight="Bold" Margin="0,8"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.JuryActivities}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,12">
+                <!-- 7. Работа в составе жюри -->
+                <TextBlock Text="7. Работа в составе жюри"
+                           FontWeight="Bold"
+                           Margin="0,8"/>
+                <DataGrid ItemsSource="{Binding SelectedTeacher.JuryActivities}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          Margin="0,0,0,12">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Уровень" Binding="{Binding Level}" Width="100"/>
-                        <DataGridTextColumn Header="Конкурс" Binding="{Binding Name}" Width="180"/>
-                        <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat=d}" Width="100"/>
+                        <DataGridTextColumn Header="Уровень"
+                                            Binding="{Binding Level}"
+                                            Width="100"/>
+                        <DataGridTextColumn Header="Событие"
+                                            Binding="{Binding Name}"
+                                            Width="180"/>
+                        <DataGridTextColumn Header="Дата"
+                                            Binding="{Binding Date, StringFormat=d}"
+                                            Width="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <!-- 8. Мастер‑классы / открытые уроки -->
-                <TextBlock Text="8. Мастер‑классы / открытые уроки" FontWeight="Bold" Margin="0,8"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.MasterClasses}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,12">
+                <!-- 8. Мастер-классы / открытые уроки -->
+                <TextBlock Text="8. Мастер-классы / открытые уроки"
+                           FontWeight="Bold"
+                           Margin="0,8"/>
+                <DataGrid ItemsSource="{Binding SelectedTeacher.MasterClasses}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          Margin="0,0,0,12">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Уровень" Binding="{Binding Level}" Width="100"/>
-                        <DataGridTextColumn Header="Тема" Binding="{Binding Name}" Width="200"/>
-                        <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat=d}" Width="100"/>
+                        <DataGridTextColumn Header="Уровень"
+                                            Binding="{Binding Level}"
+                                            Width="100"/>
+                        <DataGridTextColumn Header="Тема"
+                                            Binding="{Binding Name}"
+                                            Width="200"/>
+                        <DataGridTextColumn Header="Дата"
+                                            Binding="{Binding Date, StringFormat=d}"
+                                            Width="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
                 <!-- 9. Выступления -->
-                <TextBlock Text="9. Выступления" FontWeight="Bold" Margin="0,8"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.Speeches}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,12">
+                <TextBlock Text="9. Выступления"
+                           FontWeight="Bold"
+                           Margin="0,8"/>
+                <DataGrid ItemsSource="{Binding SelectedTeacher.Speeches}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          Margin="0,0,0,12">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Уровень" Binding="{Binding Level}" Width="100"/>
-                        <DataGridTextColumn Header="Тема" Binding="{Binding Name}" Width="200"/>
-                        <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat=d}" Width="100"/>
+                        <DataGridTextColumn Header="Уровень"
+                                            Binding="{Binding Level}"
+                                            Width="100"/>
+                        <DataGridTextColumn Header="Тема"
+                                            Binding="{Binding Name}"
+                                            Width="200"/>
+                        <DataGridTextColumn Header="Дата"
+                                            Binding="{Binding Date, StringFormat=d}"
+                                            Width="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
                 <!-- 10. Публикации -->
-                <TextBlock Text="10. Публикации" FontWeight="Bold" Margin="0,8"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.Publications}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,12">
+                <TextBlock Text="10. Публикации"
+                           FontWeight="Bold"
+                           Margin="0,8"/>
+                <DataGrid ItemsSource="{Binding SelectedTeacher.Publications}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          Margin="0,0,0,12">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Уровень" Binding="{Binding Level}" Width="100"/>
-                        <DataGridTextColumn Header="Название" Binding="{Binding Title}" Width="200"/>
-                        <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat=d}" Width="100"/>
+                        <DataGridTextColumn Header="Уровень"
+                                            Binding="{Binding Level}"
+                                            Width="100"/>
+                        <DataGridTextColumn Header="Название"
+                                            Binding="{Binding Title}"
+                                            Width="200"/>
+                        <DataGridTextColumn Header="Дата"
+                                            Binding="{Binding Date, StringFormat=d}"
+                                            Width="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <!-- 11. Экспериментальные / инновационные проекты -->
-                <TextBlock Text="11. Экспериментальные проекты" FontWeight="Bold" Margin="0,8"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.ExperimentalProjects}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,12">
+                <!-- 11. Экспериментальные проекты -->
+                <TextBlock Text="11. Экспериментальные проекты"
+                           FontWeight="Bold"
+                           Margin="0,8"/>
+                <DataGrid ItemsSource="{Binding SelectedTeacher.ExperimentalProjects}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          Margin="0,0,0,12">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Название" Binding="{Binding Name}" Width="220"/>
-                        <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat=d}" Width="100"/>
+                        <DataGridTextColumn Header="Название"
+                                            Binding="{Binding Name}"
+                                            Width="220"/>
+                        <DataGridTextColumn Header="Дата"
+                                            Binding="{Binding Date, StringFormat=d}"
+                                            Width="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
                 <!-- 12. Наставничество -->
-                <TextBlock Text="12. Наставничество" FontWeight="Bold" Margin="0,8"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.Mentorships}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,12">
+                <TextBlock Text="12. Наставничество"
+                           FontWeight="Bold"
+                           Margin="0,8"/>
+                <DataGrid ItemsSource="{Binding SelectedTeacher.Mentorships}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          Margin="0,0,0,12">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Наставляемый" Binding="{Binding Trainee}" Width="160"/>
-                        <DataGridTextColumn Header="Приказ" Binding="{Binding Order}" Width="120"/>
-                        <DataGridTextColumn Header="Дата" Binding="{Binding OrderDate, StringFormat=d}" Width="100"/>
+                        <DataGridTextColumn Header="Наставляемый"
+                                            Binding="{Binding Trainee}"
+                                            Width="160"/>
+                        <DataGridTextColumn Header="Приказ"
+                                            Binding="{Binding Order}"
+                                            Width="120"/>
+                        <DataGridTextColumn Header="Дата"
+                                            Binding="{Binding OrderDate, StringFormat=d}"
+                                            Width="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <!-- 13. Программно‑методическое сопровождение -->
-                <TextBlock Text="13. Программно‑методическое сопровождение" FontWeight="Bold" Margin="0,8"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.ProgramSupports}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,12">
+                <!-- 13. Программно-методическое сопровождение -->
+                <TextBlock Text="13. Программно-методическое сопровождение"
+                           FontWeight="Bold"
+                           Margin="0,8"/>
+                <DataGrid ItemsSource="{Binding SelectedTeacher.ProgramSupports}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          Margin="0,0,0,12">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Программа" Binding="{Binding ProgramName}" Width="220"/>
-                        <DataGridCheckBoxColumn Header="Контр. материалы" Binding="{Binding HasControlMaterials}" Width="140"/>
+                        <DataGridTextColumn Header="Программа"
+                                            Binding="{Binding ProgramName}"
+                                            Width="220"/>
+                        <DataGridCheckBoxColumn Header="Контр. материалы"
+                                                Binding="{Binding HasControlMaterials}"
+                                                Width="140"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
                 <!-- 14. Профессиональные конкурсы -->
-                <TextBlock Text="14. Профессиональные конкурсы" FontWeight="Bold" Margin="0,8"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.ProfessionalCompetitions}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,12">
+                <TextBlock Text="14. Профессиональные конкурсы"
+                           FontWeight="Bold"
+                           Margin="0,8"/>
+                <DataGrid ItemsSource="{Binding SelectedTeacher.ProfessionalCompetitions}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          Margin="0,0,0,12">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Уровень" Binding="{Binding Level}" Width="100"/>
-                        <DataGridTextColumn Header="Конкурс" Binding="{Binding Name}" Width="180"/>
-                        <DataGridTextColumn Header="Достижение" Binding="{Binding Achievement}" Width="120"/>
-                        <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat=d}" Width="100"/>
+                        <DataGridTextColumn Header="Уровень"
+                                            Binding="{Binding Level}"
+                                            Width="100"/>
+                        <DataGridTextColumn Header="Конкурс"
+                                            Binding="{Binding Name}"
+                                            Width="180"/>
+                        <DataGridTextColumn Header="Достижение"
+                                            Binding="{Binding Achievement}"
+                                            Width="120"/>
+                        <DataGridTextColumn Header="Дата"
+                                            Binding="{Binding Date, StringFormat=d}"
+                                            Width="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
 

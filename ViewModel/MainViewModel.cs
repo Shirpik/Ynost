@@ -1,22 +1,28 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using Ynost.Models;
-namespace Ynost.ViewModels;
-public partial class MainViewModel : ObservableObject
+using Ynost.Services;
+
+namespace Ynost.ViewModels
 {
-    public MainViewModel()
+    public partial class MainViewModel : ObservableObject
     {
-        Teachers = new ObservableCollection<TeacherViewModel>
+        private readonly DatabaseService _db;
+
+        public ObservableCollection<Teacher> Teachers { get; } = new();
+
+        public MainViewModel(DatabaseService db)
         {
-            DemoTeacherFactory.BuildIvanov(),
-            DemoTeacherFactory.BuildPetrov()
-        };
-        SelectedTeacher = Teachers[0];
+            _db = db;
+        }
+
+        public async Task LoadDataAsync()
+        {
+            var list = await _db.GetAllTeachersAsync();
+            Teachers.Clear();
+            foreach (var t in list)
+                Teachers.Add(t);
+        }
     }
-    public ObservableCollection<TeacherViewModel> Teachers { get; }
-    [ObservableProperty] private TeacherViewModel? selectedTeacher;
-    public bool IsAdmin { get; set; }
-    [RelayCommand] private void Refresh() { }
-    [RelayCommand] private void Save() { if (IsAdmin) { } }
 }

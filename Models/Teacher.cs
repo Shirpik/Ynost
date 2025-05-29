@@ -4,7 +4,7 @@ public class Teacher
 {
     public int Id { get; set; }
     public string FullName { get; set; } = string.Empty;
-
+    public bool IsLecturer { get; set; }
     public List<AcademicYearResult> AcademicResults { get; } = new();
     public List<EgeResult> EgeResults { get; } = new();
     public List<OgeResult> OgeResults { get; } = new();
