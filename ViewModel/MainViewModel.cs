@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using Ynost.Models;
 using Ynost.Services;
 
 namespace Ynost.ViewModels
@@ -10,7 +9,12 @@ namespace Ynost.ViewModels
     {
         private readonly DatabaseService _db;
 
-        public ObservableCollection<Teacher> Teachers { get; } = new();
+        // Теперь — коллекция VM, а не просто моделей
+        public ObservableCollection<TeacherViewModel> Teachers { get; } = new();
+
+        // Свойство для выбранного преподавателя
+        [ObservableProperty]
+        private TeacherViewModel? selectedTeacher;
 
         public MainViewModel(DatabaseService db)
         {
@@ -22,7 +26,13 @@ namespace Ynost.ViewModels
             var list = await _db.GetAllTeachersAsync();
             Teachers.Clear();
             foreach (var t in list)
-                Teachers.Add(t);
+            {
+                Teachers.Add(new TeacherViewModel(t));
+            }
+
+            // Выбираем первого по умолчанию
+            if (Teachers.Count > 0)
+                SelectedTeacher = Teachers[0];
         }
     }
 }

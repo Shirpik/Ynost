@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using Ynost.Models;
 using Ynost.Services;
 using Ynost.ViewModels;
 
@@ -13,7 +13,6 @@ namespace Ynost
     public partial class MainWindow : Window
     {
         private readonly MainViewModel _vm;
-        // Путь до файла лога
         private readonly string _logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ynost.log");
 
         public MainWindow()
@@ -48,7 +47,7 @@ namespace Ynost
             catch (Exception ex)
             {
                 sw.Stop();
-                Log($"ОШИБКА при загрузке: {ex}");   // ex.ToString() даст stack trace и inner exception
+                Log($"ОШИБКА при загрузке: {ex}");
                 MessageBox.Show(
                     $"Ошибка при загрузке преподавателей:\n{ex.Message}",
                     "Ynost — Ошибка",
@@ -67,10 +66,15 @@ namespace Ynost
             string q = SearchBox.Text.Trim();
 
             if (string.IsNullOrWhiteSpace(q))
+            {
                 view.Filter = null;
+            }
             else
+            {
                 view.Filter = o =>
-                    o is Teacher t && t.FullName.Contains(q, StringComparison.OrdinalIgnoreCase);
+                    o is TeacherViewModel t &&
+                    t.FullName.Contains(q, StringComparison.OrdinalIgnoreCase);
+            }
 
             Log($"Фильтр применён: \"{q}\" (осталось {view.Cast<object>().Count()} записей)");
         }
@@ -82,10 +86,7 @@ namespace Ynost
                 File.AppendAllText(_logPath,
                     $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} {message}{Environment.NewLine}");
             }
-            catch
-            {
-                // если файл занят или недоступен — молча пропустим
-            }
+            catch { }
         }
     }
 }
