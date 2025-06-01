@@ -14,37 +14,45 @@ namespace Ynost
     public partial class MainWindow : Window
     {
         private readonly MainViewModel _vm;
-        private readonly string _logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ynost.log");
+        private readonly string _logPath;
+        private bool _isDataLoaded = false;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            var connectionString =
-                "Host=91.192.168.52;Port=5432;Database=ynost_db;Username=teacher_app;Password=T_pass;Ssl Mode=Disable";
+            var connectionString = "Host=91.192.168.52;Port=5432;Database=ynost_db;Username=teacher_app;Password=T_pass;Ssl Mode=Disable";
             var dbService = new DatabaseService(connectionString);
             _vm = new MainViewModel(dbService);
 
             DataContext = _vm;
-            // Loaded += MainWindow_Loaded; // Уже установлено в XAML
+            Loaded += MainWindow_Loaded;
+
+            _logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ynost.log");
         }
 
         private async void MainWindow_Loaded(object? sender, RoutedEventArgs e)
         {
+            if (_isDataLoaded) return;
+            _isDataLoaded = true;
+
             Log("=== Начало загрузки преподавателей ===");
             var sw = Stopwatch.StartNew();
 
             try
             {
-                await _vm.LoadDataAsync();
+                // Первая загрузка - с использованием кеша
+                await _vm.LoadDataAsync(useCache: true);
+
                 sw.Stop();
                 Log($"Успех: загружено {_vm.Teachers.Count} преподавателей за {sw.ElapsedMilliseconds} ms");
-                // MessageBox можно оставить для отладки или убрать, если не нужен при каждой загрузке
-                // MessageBox.Show(
-                //     $"Загружено преподавателей: {_vm.Teachers.Count}",
-                //     "Ynost",
-                //     MessageBoxButton.OK,
-                //     MessageBoxImage.Information);
+
+                // Фоновая актуализация данных
+                _ = Task.Run(async () =>
+                {
+                    await _vm.LoadDataAsync(useCache: false);
+                    Log($"Фоновая синхронизация: обновлено {_vm.Teachers.Count} записей");
+                });
             }
             catch (Exception ex)
             {
@@ -103,6 +111,11 @@ namespace Ynost
                     e.Handled = true;
                 }
             }
+        }
+
+        private void TeachersGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
         }
     }
 }

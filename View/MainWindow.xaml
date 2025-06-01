@@ -40,7 +40,7 @@
                       AutoGenerateColumns="False"
                       CanUserAddRows="False"
                       IsReadOnly="True"
-                      Margin="4">
+                      Margin="4" SelectionChanged="TeachersGrid_SelectionChanged">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="ФИО"
                                         Binding="{Binding FullName}"
