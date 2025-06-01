@@ -12,13 +12,20 @@
         </Grid.ColumnDefinitions>
 
         <!-- Левая панель -->
-        <StackPanel Grid.Column="0" Background="#f3f6ff">
+        <Grid Grid.Column="0" Background="#f3f6ff">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
             <TextBlock Text="Преподаватели"
+                       Grid.Row="0"
                        FontSize="16"
                        FontWeight="Bold"
                        Margin="8"/>
 
-            <StackPanel Margin="4">
+            <StackPanel Grid.Row="1" Margin="4">
                 <TextBlock Text="Поиск:"
                            Margin="4,0,0,4"/>
                 <TextBox x:Name="SearchBox"
@@ -27,6 +34,7 @@
             </StackPanel>
 
             <DataGrid x:Name="TeachersGrid"
+                      Grid.Row="2"
                       ItemsSource="{Binding Teachers}"
                       SelectedItem="{Binding SelectedTeacher}"
                       AutoGenerateColumns="False"
@@ -39,7 +47,7 @@
                                         Width="*"/>
                 </DataGrid.Columns>
             </DataGrid>
-        </StackPanel>
+        </Grid>
 
         <!-- Сплиттер -->
         <GridSplitter Grid.Column="1"
@@ -48,6 +56,7 @@
 
         <!-- Правая прокручиваемая панель -->
         <ScrollViewer Grid.Column="2"
+                      x:Name="DetailsScrollViewer"
                       HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="10">
@@ -57,6 +66,7 @@
                            FontWeight="Bold"
                            Margin="0,8"/>
                 <DataGrid ItemsSource="{Binding SelectedTeacher.AcademicResults}"
+                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
                           Margin="0,0,0,12">
@@ -82,6 +92,7 @@
                 <!-- 2. ЕГЭ -->
                 <TextBlock Text="2. ЕГЭ" FontWeight="Bold" Margin="0,8"/>
                 <DataGrid ItemsSource="{Binding SelectedTeacher.EgeResults}"
+                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
                           Margin="0,0,0,12">
@@ -107,6 +118,7 @@
                 <!-- 3. ОГЭ -->
                 <TextBlock Text="3. ОГЭ" FontWeight="Bold" Margin="0,8"/>
                 <DataGrid ItemsSource="{Binding SelectedTeacher.OgeResults}"
+                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
                           Margin="0,0,0,12">
@@ -134,6 +146,7 @@
                            FontWeight="Bold"
                            Margin="0,8"/>
                 <DataGrid ItemsSource="{Binding SelectedTeacher.IndependentAssessments}"
+                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
                           Margin="0,0,0,12">
@@ -158,6 +171,7 @@
                            FontWeight="Bold"
                            Margin="0,8"/>
                 <DataGrid ItemsSource="{Binding SelectedTeacher.SelfDeterminations}"
+                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
                           Margin="0,0,0,12">
@@ -179,6 +193,7 @@
                            FontWeight="Bold"
                            Margin="0,8"/>
                 <DataGrid ItemsSource="{Binding SelectedTeacher.StudentOlympiads}"
+                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
                           Margin="0,0,0,12">
@@ -206,6 +221,7 @@
                            FontWeight="Bold"
                            Margin="0,8"/>
                 <DataGrid ItemsSource="{Binding SelectedTeacher.JuryActivities}"
+                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
                           Margin="0,0,0,12">
@@ -227,6 +243,7 @@
                            FontWeight="Bold"
                            Margin="0,8"/>
                 <DataGrid ItemsSource="{Binding SelectedTeacher.MasterClasses}"
+                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
                           Margin="0,0,0,12">
@@ -248,6 +265,7 @@
                            FontWeight="Bold"
                            Margin="0,8"/>
                 <DataGrid ItemsSource="{Binding SelectedTeacher.Speeches}"
+                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
                           Margin="0,0,0,12">
@@ -269,6 +287,7 @@
                            FontWeight="Bold"
                            Margin="0,8"/>
                 <DataGrid ItemsSource="{Binding SelectedTeacher.Publications}"
+                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
                           Margin="0,0,0,12">
@@ -290,6 +309,7 @@
                            FontWeight="Bold"
                            Margin="0,8"/>
                 <DataGrid ItemsSource="{Binding SelectedTeacher.ExperimentalProjects}"
+                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
                           Margin="0,0,0,12">
@@ -308,6 +328,7 @@
                            FontWeight="Bold"
                            Margin="0,8"/>
                 <DataGrid ItemsSource="{Binding SelectedTeacher.Mentorships}"
+                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
                           Margin="0,0,0,12">
@@ -329,6 +350,7 @@
                            FontWeight="Bold"
                            Margin="0,8"/>
                 <DataGrid ItemsSource="{Binding SelectedTeacher.ProgramSupports}"
+                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
                           Margin="0,0,0,12">
@@ -347,6 +369,7 @@
                            FontWeight="Bold"
                            Margin="0,8"/>
                 <DataGrid ItemsSource="{Binding SelectedTeacher.ProfessionalCompetitions}"
+                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
                           Margin="0,0,0,12">
@@ -363,6 +386,23 @@
                         <DataGridTextColumn Header="Дата"
                                             Binding="{Binding Date, StringFormat=d}"
                                             Width="100"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- 15. Курсы повышения квалификации (добавим его сюда, если нужно) -->
+                <TextBlock Text="15. Курсы повышения квалификации" 
+                           FontWeight="Bold" 
+                           Margin="0,8"/>
+                <DataGrid ItemsSource="{Binding SelectedTeacher.Trainings}"
+                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          Margin="0,0,0,12">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Название курса" Binding="{Binding CourseName}" Width="200"/>
+                        <DataGridTextColumn Header="Часы" Binding="{Binding Hours}" Width="60"/>
+                        <DataGridTextColumn Header="Год" Binding="{Binding Year}" Width="60"/>
+                        <DataGridTextColumn Header="Организация" Binding="{Binding Provider}" Width="150"/>
                     </DataGrid.Columns>
                 </DataGrid>
 

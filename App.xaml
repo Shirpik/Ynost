@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:Ynost"
              StartupUri="View/MainWindow.xaml">
     <Application.Resources>
-         
+
     </Application.Resources>
 </Application>

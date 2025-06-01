@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input; // Добавлено для MouseWheelEventArgs
 using Ynost.Services;
 using Ynost.ViewModels;
 
@@ -25,7 +26,7 @@ namespace Ynost
             _vm = new MainViewModel(dbService);
 
             DataContext = _vm;
-            Loaded += MainWindow_Loaded;
+            // Loaded += MainWindow_Loaded; // Уже установлено в XAML
         }
 
         private async void MainWindow_Loaded(object? sender, RoutedEventArgs e)
@@ -38,11 +39,12 @@ namespace Ynost
                 await _vm.LoadDataAsync();
                 sw.Stop();
                 Log($"Успех: загружено {_vm.Teachers.Count} преподавателей за {sw.ElapsedMilliseconds} ms");
-                MessageBox.Show(
-                    $"Загружено преподавателей: {_vm.Teachers.Count}",
-                    "Ynost",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                // MessageBox можно оставить для отладки или убрать, если не нужен при каждой загрузке
+                // MessageBox.Show(
+                //     $"Загружено преподавателей: {_vm.Teachers.Count}",
+                //     "Ynost",
+                //     MessageBoxButton.OK,
+                //     MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
@@ -86,7 +88,21 @@ namespace Ynost
                 File.AppendAllText(_logPath,
                     $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} {message}{Environment.NewLine}");
             }
-            catch { }
+            catch { /* Подавление ошибок логирования, чтобы не нарушать работу приложения */ }
+        }
+
+        private void DataGrid_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (!e.Handled && sender is UIElement)
+            {
+                // Прокручиваем родительский ScrollViewer, если он есть
+                // DetailsScrollViewer - это x:Name, который мы дали ScrollViewer в XAML
+                if (DetailsScrollViewer != null)
+                {
+                    DetailsScrollViewer.ScrollToVerticalOffset(DetailsScrollViewer.VerticalOffset - e.Delta);
+                    e.Handled = true;
+                }
+            }
         }
     }
 }
