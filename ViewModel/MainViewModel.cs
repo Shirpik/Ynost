@@ -1,12 +1,14 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿// MainViewModel.cs
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
-using Ynost.Models;
+using Ynost.Models; // Убедись, что этот using есть
 using Ynost.Services;
+using Ynost.ViewModels; // Добавь этот using для TeacherViewModel
 
 namespace Ynost.ViewModels
 {
@@ -15,92 +17,96 @@ namespace Ynost.ViewModels
         private readonly DatabaseService _db;
         private bool _isInitialized = false;
 
-        // Все свойства теперь объявлены явно без атрибутов
+        // Свойства для состояния загрузки (оставляем твои)
+        [ObservableProperty]
         private bool _isLoading;
+        [ObservableProperty]
         private string _loadingStatus = "Инициализация...";
+        [ObservableProperty]
         private bool _hasError;
+        [ObservableProperty]
         private string _errorMessage = string.Empty;
 
-        public ObservableCollection<Teacher> Teachers { get; } = new();
+        // Коллекция теперь будет содержать TeacherViewModel
+        public ObservableCollection<TeacherViewModel> Teachers { get; } = new();
+
+        // Свойство для выбранного преподавателя (TeacherViewModel)
+        [ObservableProperty]
+        private TeacherViewModel? selectedTeacher;
+
 
         public MainViewModel(DatabaseService db)
         {
             _db = db;
-            InitializeCommand = new AsyncRelayCommand(InitializeAsync);
+            // InitializeCommand больше не нужен, так как загрузка идет из MainWindow.xaml.cs
+            // Если ты его используешь где-то еще, оставь. Для простоты пока уберу.
         }
 
-        public IAsyncRelayCommand InitializeCommand { get; }
-
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
-        }
-
-        public string LoadingStatus
-        {
-            get => _loadingStatus;
-            set => SetProperty(ref _loadingStatus, value);
-        }
-
-        public bool HasError
-        {
-            get => _hasError;
-            set => SetProperty(ref _hasError, value);
-        }
-
-        public string ErrorMessage
-        {
-            get => _errorMessage;
-            set => SetProperty(ref _errorMessage, value);
-        }
-
-        private async Task InitializeAsync()
-        {
-            if (_isInitialized || IsLoading) return;
-
-            IsLoading = true;
-            HasError = false;
-            ErrorMessage = string.Empty;
-
-            try
-            {
-                LoadingStatus = "Загрузка данных...";
-                await LoadDataAsync(useCache: true);
-                _isInitialized = true;
-            }
-            catch (Exception ex)
-            {
-                HasError = true;
-                ErrorMessage = $"Ошибка инициализации: {ex.Message}";
-                Debug.WriteLine($"Ошибка инициализации: {ex}");
-            }
-            finally
-            {
-                IsLoading = false;
-            }
-        }
+        // Убираем InitializeCommand и InitializeAsync, если MainWindow.xaml.cs управляет загрузкой
+        // Если ты его используешь, оставь, но убедись, что SelectedTeacher устанавливается.
 
         public async Task LoadDataAsync(bool useCache = true)
         {
+            IsLoading = true; // Установим IsLoading в начале
+            HasError = false;
+            ErrorMessage = string.Empty;
+            if (useCache && !_isInitialized)
+            {
+                LoadingStatus = "Загрузка из кеша...";
+            }
+            else if (!useCache)
+            {
+                LoadingStatus = "Обновление данных с сервера...";
+            }
+
+
             try
             {
-                var list = await _db.GetAllTeachersAsync(useCache);
+                var teacherModels = await _db.GetAllTeachersAsync(useCache); // Получаем список Teacher
 
+                // Обновляем коллекцию Teachers в UI потоке
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
+                    // Сохраняем текущий выбранный Id, если он есть
+                    int? previouslySelectedTeacherId = SelectedTeacher?.GetModelId();
+
                     Teachers.Clear();
-                    foreach (var t in list)
-                        Teachers.Add(t);
+                    foreach (var model in teacherModels)
+                    {
+                        Teachers.Add(new TeacherViewModel(model)); // Оборачиваем в TeacherViewModel
+                    }
+
+                    // Попытка восстановить выбор
+                    if (previouslySelectedTeacherId.HasValue)
+                    {
+                        SelectedTeacher = Teachers.FirstOrDefault(tvm => tvm.GetModelId() == previouslySelectedTeacherId.Value);
+                    }
+
+                    // Если после обновления выбранный элемент стал null (например, его удалили)
+                    // или если это первая загрузка, выбираем первого в списке.
+                    if (SelectedTeacher == null && Teachers.Count > 0)
+                    {
+                        SelectedTeacher = Teachers[0];
+                    }
                 });
 
-                if (useCache && !_isInitialized)
+                if (!_isInitialized) _isInitialized = true;
+
+                // Фоновое обновление, если это была загрузка из кеша (твоя логика)
+                // Убедимся, что оно не вызывается рекурсивно, если isInitialized уже true
+                // и это был не первый вызов LoadDataAsync
+                if (useCache && _isInitialized) // Если грузили из кеша и уже инициализированы
                 {
-                    _ = Task.Run(async () =>
+                    // Запускаем полное обновление, если это не оно само себя вызвало из фонового потока
+                    bool isThisTheBackgroundUpdateCall = !Application.Current.Dispatcher.CheckAccess();
+                    if (!isThisTheBackgroundUpdateCall) // Т.е. если это основной вызов LoadDataAsync(useCache:true)
                     {
-                        await Task.Delay(2000);
-                        await LoadDataAsync(useCache: false);
-                    });
+                        _ = Task.Run(async () =>
+                        {
+                            await Task.Delay(2000); // Небольшая задержка перед фоновым обновлением
+                            await LoadDataAsync(useCache: false); // Полное обновление
+                        });
+                    }
                 }
             }
             catch (Exception ex)
@@ -109,10 +115,15 @@ namespace Ynost.ViewModels
                 {
                     ErrorMessage = $"Ошибка загрузки: {ex.Message}";
                     HasError = true;
+                    LoadingStatus = "Ошибка загрузки";
                 });
-
                 Debug.WriteLine($"Ошибка загрузки данных: {ex}");
-                throw;
+                // throw; // Не бросаем исключение дальше, чтобы UI не падал, ошибки отображаются
+            }
+            finally
+            {
+                IsLoading = false; // Сбрасываем IsLoading в конце
+                if (!HasError) LoadingStatus = $"Загружено: {Teachers.Count} преподавателей";
             }
         }
     }

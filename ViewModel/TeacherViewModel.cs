@@ -1,44 +1,404 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Ynost.Models;
-namespace Ynost.ViewModels;
-public partial class TeacherViewModel : ObservableObject
+
+namespace Ynost.ViewModels
 {
-    public TeacherViewModel(Teacher model)
+    public partial class TeacherViewModel : ObservableObject
     {
-        _model = model;
-        FullName = model.FullName;
-        AcademicResults = new(model.AcademicResults);
-        EgeResults = new(model.EgeResults);
-        OgeResults = new(model.OgeResults);
-        IndependentAssessments = new(model.IndependentAssessments);
-        SelfDeterminations = new(model.SelfDeterminations);
-        StudentOlympiads = new(model.StudentOlympiads);
-        JuryActivities = new(model.JuryActivities);
-        MasterClasses = new(model.MasterClasses);
-        Speeches = new(model.Speeches);
-        Publications = new(model.Publications);
-        Trainings = new(model.Trainings);
-        ExperimentalProjects = new(model.ExperimentalProjects);
-        Mentorships = new(model.Mentorships);
-        ProgramSupports = new(model.ProgramSupports);
-        ProfessionalCompetitions = new(model.ProfessionalCompetitions);
+        private readonly Teacher _model;
+
+        public TeacherViewModel(Teacher model)
+        {
+            _model = model;
+            FullName = model.FullName; // Предполагаем, что FullName не меняется после создания ViewModel
+
+            AcademicResults = new ObservableCollection<AcademicYearResult>(model.AcademicResults);
+            EgeResults = new ObservableCollection<EgeResult>(model.EgeResults);
+            OgeResults = new ObservableCollection<OgeResult>(model.OgeResults);
+            IndependentAssessments = new ObservableCollection<IndependentAssessment>(model.IndependentAssessments);
+            SelfDeterminations = new ObservableCollection<SelfDeterminationActivity>(model.SelfDeterminations);
+            StudentOlympiads = new ObservableCollection<StudentOlympiad>(model.StudentOlympiads);
+            JuryActivities = new ObservableCollection<JuryActivity>(model.JuryActivities);
+            MasterClasses = new ObservableCollection<MasterClass>(model.MasterClasses);
+            Speeches = new ObservableCollection<Speech>(model.Speeches);
+            Publications = new ObservableCollection<Publication>(model.Publications);
+            Trainings = new ObservableCollection<TrainingCourse>(model.Trainings);
+            ExperimentalProjects = new ObservableCollection<ExperimentalProject>(model.ExperimentalProjects);
+            Mentorships = new ObservableCollection<Mentorship>(model.Mentorships);
+            ProgramSupports = new ObservableCollection<ProgramMethodSupport>(model.ProgramSupports);
+            ProfessionalCompetitions = new ObservableCollection<ProfessionalCompetition>(model.ProfessionalCompetitions);
+        }
+
+        // Свойство для отображения имени, можно сделать [ObservableProperty], если оно может меняться извне VM
+        public string FullName { get; }
+
+
+        public int GetModelId()
+        {
+            return _model.Id;
+        }
+
+        // 1. AcademicYearResult
+        public ObservableCollection<AcademicYearResult> AcademicResults { get; }
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(DeleteAcademicResultCommand))]
+        private AcademicYearResult? selectedAcademicResult;
+
+        [RelayCommand]
+        private void AddAcademicResult()
+        {
+            var newItem = new AcademicYearResult(DateTime.Now.Year, "Новый предмет", null, null, null, null, null, null, null);
+            AcademicResults.Add(newItem);
+            SelectedAcademicResult = newItem; // Автоматически выбираем добавленный элемент
+        }
+        [RelayCommand(CanExecute = nameof(CanDeleteAcademicResult))]
+        private void DeleteAcademicResult()
+        {
+            if (SelectedAcademicResult != null)
+            {
+                AcademicResults.Remove(SelectedAcademicResult);
+                SelectedAcademicResult = null; // Сбрасываем выбор
+            }
+        }
+        private bool CanDeleteAcademicResult() => SelectedAcademicResult != null;
+
+        // 2. EgeResult
+        public ObservableCollection<EgeResult> EgeResults { get; }
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(DeleteEgeResultCommand))]
+        private EgeResult? selectedEgeResult;
+
+        [RelayCommand]
+        private void AddEgeResult()
+        {
+            var newItem = new EgeResult("Новый предмет", "Класс", 0, 0, 0, 0, 0, null);
+            EgeResults.Add(newItem);
+            SelectedEgeResult = newItem;
+        }
+        [RelayCommand(CanExecute = nameof(CanDeleteEgeResult))]
+        private void DeleteEgeResult()
+        {
+            if (SelectedEgeResult != null)
+            {
+                EgeResults.Remove(SelectedEgeResult);
+                SelectedEgeResult = null;
+            }
+        }
+        private bool CanDeleteEgeResult() => SelectedEgeResult != null;
+
+        // 3. OgeResult
+        public ObservableCollection<OgeResult> OgeResults { get; }
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(DeleteOgeResultCommand))]
+        private OgeResult? selectedOgeResult;
+
+        [RelayCommand]
+        private void AddOgeResult()
+        {
+            var newItem = new OgeResult("Новый предмет", "Класс", 0, 0, 0, 0, 0, 0, null);
+            OgeResults.Add(newItem);
+            SelectedOgeResult = newItem;
+        }
+        [RelayCommand(CanExecute = nameof(CanDeleteOgeResult))]
+        private void DeleteOgeResult()
+        {
+            if (SelectedOgeResult != null)
+            {
+                OgeResults.Remove(SelectedOgeResult);
+                SelectedOgeResult = null;
+            }
+        }
+        private bool CanDeleteOgeResult() => SelectedOgeResult != null;
+
+        // 4. IndependentAssessment
+        public ObservableCollection<IndependentAssessment> IndependentAssessments { get; }
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(DeleteIndependentAssessmentCommand))]
+        private IndependentAssessment? selectedIndependentAssessment;
+
+        [RelayCommand]
+        private void AddIndependentAssessment()
+        {
+            var newItem = new IndependentAssessment("Процедура", DateTime.Now, "Класс/Предмет", 0, 0, 0, null);
+            IndependentAssessments.Add(newItem);
+            SelectedIndependentAssessment = newItem;
+        }
+        [RelayCommand(CanExecute = nameof(CanDeleteIndependentAssessment))]
+        private void DeleteIndependentAssessment()
+        {
+            if (SelectedIndependentAssessment != null)
+            {
+                IndependentAssessments.Remove(SelectedIndependentAssessment);
+                SelectedIndependentAssessment = null;
+            }
+        }
+        private bool CanDeleteIndependentAssessment() => SelectedIndependentAssessment != null;
+
+        // 5. SelfDeterminationActivity
+        public ObservableCollection<SelfDeterminationActivity> SelfDeterminations { get; }
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(DeleteSelfDeterminationCommand))]
+        private SelfDeterminationActivity? selectedSelfDetermination;
+
+        [RelayCommand]
+        private void AddSelfDetermination()
+        {
+            var newItem = new SelfDeterminationActivity("Уровень", "Мероприятие", "Роль", null);
+            SelfDeterminations.Add(newItem);
+            SelectedSelfDetermination = newItem;
+        }
+        [RelayCommand(CanExecute = nameof(CanDeleteSelfDetermination))]
+        private void DeleteSelfDetermination()
+        {
+            if (SelectedSelfDetermination != null)
+            {
+                SelfDeterminations.Remove(SelectedSelfDetermination);
+                SelectedSelfDetermination = null;
+            }
+        }
+        private bool CanDeleteSelfDetermination() => SelectedSelfDetermination != null;
+
+        // 6. StudentOlympiad
+        public ObservableCollection<StudentOlympiad> StudentOlympiads { get; }
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(DeleteStudentOlympiadCommand))]
+        private StudentOlympiad? selectedStudentOlympiad;
+
+        [RelayCommand]
+        private void AddStudentOlympiad()
+        {
+            var newItem = new StudentOlympiad("Уровень", "Название", "Форма", "Ученик", "Результат", null);
+            StudentOlympiads.Add(newItem);
+            SelectedStudentOlympiad = newItem;
+        }
+        [RelayCommand(CanExecute = nameof(CanDeleteStudentOlympiad))]
+        private void DeleteStudentOlympiad()
+        {
+            if (SelectedStudentOlympiad != null)
+            {
+                StudentOlympiads.Remove(SelectedStudentOlympiad);
+                SelectedStudentOlympiad = null;
+            }
+        }
+        private bool CanDeleteStudentOlympiad() => SelectedStudentOlympiad != null;
+
+        // 7. JuryActivity
+        public ObservableCollection<JuryActivity> JuryActivities { get; }
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(DeleteJuryActivityCommand))]
+        private JuryActivity? selectedJuryActivity;
+
+        [RelayCommand]
+        private void AddJuryActivity()
+        {
+            var newItem = new JuryActivity("Уровень", "Событие", DateTime.Now, null);
+            JuryActivities.Add(newItem);
+            SelectedJuryActivity = newItem;
+        }
+        [RelayCommand(CanExecute = nameof(CanDeleteJuryActivity))]
+        private void DeleteJuryActivity()
+        {
+            if (SelectedJuryActivity != null)
+            {
+                JuryActivities.Remove(SelectedJuryActivity);
+                SelectedJuryActivity = null;
+            }
+        }
+        private bool CanDeleteJuryActivity() => SelectedJuryActivity != null;
+
+        // 8. MasterClass
+        public ObservableCollection<MasterClass> MasterClasses { get; }
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(DeleteMasterClassCommand))]
+        private MasterClass? selectedMasterClass;
+
+        [RelayCommand]
+        private void AddMasterClass()
+        {
+            var newItem = new MasterClass("Уровень", "Тема", DateTime.Now, null);
+            MasterClasses.Add(newItem);
+            SelectedMasterClass = newItem;
+        }
+        [RelayCommand(CanExecute = nameof(CanDeleteMasterClass))]
+        private void DeleteMasterClass()
+        {
+            if (SelectedMasterClass != null)
+            {
+                MasterClasses.Remove(SelectedMasterClass);
+                SelectedMasterClass = null;
+            }
+        }
+        private bool CanDeleteMasterClass() => SelectedMasterClass != null;
+
+        // 9. Speech
+        public ObservableCollection<Speech> Speeches { get; }
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(DeleteSpeechCommand))]
+        private Speech? selectedSpeech;
+
+        [RelayCommand]
+        private void AddSpeech()
+        {
+            var newItem = new Speech("Уровень", "Тема", DateTime.Now, null);
+            Speeches.Add(newItem);
+            SelectedSpeech = newItem;
+        }
+        [RelayCommand(CanExecute = nameof(CanDeleteSpeech))]
+        private void DeleteSpeech()
+        {
+            if (SelectedSpeech != null)
+            {
+                Speeches.Remove(SelectedSpeech);
+                SelectedSpeech = null;
+            }
+        }
+        private bool CanDeleteSpeech() => SelectedSpeech != null;
+
+        // 10. Publication
+        public ObservableCollection<Publication> Publications { get; }
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(DeletePublicationCommand))]
+        private Publication? selectedPublication;
+
+        [RelayCommand]
+        private void AddPublication()
+        {
+            var newItem = new Publication("Уровень", "Название", DateTime.Now, null);
+            Publications.Add(newItem);
+            SelectedPublication = newItem;
+        }
+        [RelayCommand(CanExecute = nameof(CanDeletePublication))]
+        private void DeletePublication()
+        {
+            if (SelectedPublication != null)
+            {
+                Publications.Remove(SelectedPublication);
+                SelectedPublication = null;
+            }
+        }
+        private bool CanDeletePublication() => SelectedPublication != null;
+
+        // 11. TrainingCourse
+        public ObservableCollection<TrainingCourse> Trainings { get; }
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(DeleteTrainingCourseCommand))]
+        private TrainingCourse? selectedTrainingCourse;
+
+        [RelayCommand]
+        private void AddTrainingCourse()
+        {
+            var newItem = new TrainingCourse("Название курса", 0, DateTime.Now.Year, "Организация", null);
+            Trainings.Add(newItem);
+            SelectedTrainingCourse = newItem;
+        }
+        [RelayCommand(CanExecute = nameof(CanDeleteTrainingCourse))]
+        private void DeleteTrainingCourse()
+        {
+            if (SelectedTrainingCourse != null)
+            {
+                Trainings.Remove(SelectedTrainingCourse);
+                SelectedTrainingCourse = null;
+            }
+        }
+        private bool CanDeleteTrainingCourse() => SelectedTrainingCourse != null;
+
+        // 12. ExperimentalProject
+        public ObservableCollection<ExperimentalProject> ExperimentalProjects { get; }
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(DeleteExperimentalProjectCommand))]
+        private ExperimentalProject? selectedExperimentalProject;
+
+        [RelayCommand]
+        private void AddExperimentalProject()
+        {
+            var newItem = new ExperimentalProject("Название проекта", DateTime.Now, null);
+            ExperimentalProjects.Add(newItem);
+            SelectedExperimentalProject = newItem;
+        }
+        [RelayCommand(CanExecute = nameof(CanDeleteExperimentalProject))]
+        private void DeleteExperimentalProject()
+        {
+            if (SelectedExperimentalProject != null)
+            {
+                ExperimentalProjects.Remove(SelectedExperimentalProject);
+                SelectedExperimentalProject = null;
+            }
+        }
+        private bool CanDeleteExperimentalProject() => SelectedExperimentalProject != null;
+
+        // 13. Mentorship
+        public ObservableCollection<Mentorship> Mentorships { get; }
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(DeleteMentorshipCommand))]
+        private Mentorship? selectedMentorship;
+
+        [RelayCommand]
+        private void AddMentorship()
+        {
+            var newItem = new Mentorship("Наставляемый", "Приказ", DateTime.Now, null);
+            Mentorships.Add(newItem);
+            SelectedMentorship = newItem;
+        }
+        [RelayCommand(CanExecute = nameof(CanDeleteMentorship))]
+        private void DeleteMentorship()
+        {
+            if (SelectedMentorship != null)
+            {
+                Mentorships.Remove(SelectedMentorship);
+                SelectedMentorship = null;
+            }
+        }
+        private bool CanDeleteMentorship() => SelectedMentorship != null;
+
+        // 14. ProgramMethodSupport
+        public ObservableCollection<ProgramMethodSupport> ProgramSupports { get; }
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(DeleteProgramSupportCommand))]
+        private ProgramMethodSupport? selectedProgramSupport;
+
+        [RelayCommand]
+        private void AddProgramSupport()
+        {
+            var newItem = new ProgramMethodSupport("Название программы", false, null);
+            ProgramSupports.Add(newItem);
+            SelectedProgramSupport = newItem;
+        }
+        [RelayCommand(CanExecute = nameof(CanDeleteProgramSupport))]
+        private void DeleteProgramSupport()
+        {
+            if (SelectedProgramSupport != null)
+            {
+                ProgramSupports.Remove(SelectedProgramSupport);
+                SelectedProgramSupport = null;
+            }
+        }
+        private bool CanDeleteProgramSupport() => SelectedProgramSupport != null;
+
+        // 15. ProfessionalCompetition
+        public ObservableCollection<ProfessionalCompetition> ProfessionalCompetitions { get; }
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(DeleteProfessionalCompetitionCommand))]
+        private ProfessionalCompetition? selectedProfessionalCompetition;
+
+        [RelayCommand]
+        private void AddProfessionalCompetition()
+        {
+            var newItem = new ProfessionalCompetition("Уровень", "Конкурс", "Достижение", DateTime.Now, null);
+            ProfessionalCompetitions.Add(newItem);
+            SelectedProfessionalCompetition = newItem;
+        }
+        [RelayCommand(CanExecute = nameof(CanDeleteProfessionalCompetition))]
+        private void DeleteProfessionalCompetition()
+        {
+            if (SelectedProfessionalCompetition != null)
+            {
+                ProfessionalCompetitions.Remove(SelectedProfessionalCompetition);
+                SelectedProfessionalCompetition = null;
+            }
+        }
+        private bool CanDeleteProfessionalCompetition() => SelectedProfessionalCompetition != null;
     }
-    private readonly Teacher _model;
-    [ObservableProperty] private string fullName = string.Empty;
-    public ObservableCollection<AcademicYearResult> AcademicResults { get; }
-    public ObservableCollection<EgeResult> EgeResults { get; }
-    public ObservableCollection<OgeResult> OgeResults { get; }
-    public ObservableCollection<IndependentAssessment> IndependentAssessments { get; }
-    public ObservableCollection<SelfDeterminationActivity> SelfDeterminations { get; }
-    public ObservableCollection<StudentOlympiad> StudentOlympiads { get; }
-    public ObservableCollection<JuryActivity> JuryActivities { get; }
-    public ObservableCollection<MasterClass> MasterClasses { get; }
-    public ObservableCollection<Speech> Speeches { get; }
-    public ObservableCollection<Publication> Publications { get; }
-    public ObservableCollection<TrainingCourse> Trainings { get; }
-    public ObservableCollection<ExperimentalProject> ExperimentalProjects { get; }
-    public ObservableCollection<Mentorship> Mentorships { get; }
-    public ObservableCollection<ProgramMethodSupport> ProgramSupports { get; }
-    public ObservableCollection<ProfessionalCompetition> ProfessionalCompetitions { get; }
 }
