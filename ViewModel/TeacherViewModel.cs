@@ -13,7 +13,7 @@ namespace Ynost.ViewModels
         public TeacherViewModel(Teacher model)
         {
             _model = model;
-            FullName = model.FullName; // Предполагаем, что FullName не меняется после создания ViewModel
+            FullName = model.FullName;
 
             AcademicResults = new ObservableCollection<AcademicYearResult>(model.AcademicResults);
             EgeResults = new ObservableCollection<EgeResult>(model.EgeResults);
@@ -32,9 +32,7 @@ namespace Ynost.ViewModels
             ProfessionalCompetitions = new ObservableCollection<ProfessionalCompetition>(model.ProfessionalCompetitions);
         }
 
-        // Свойство для отображения имени, можно сделать [ObservableProperty], если оно может меняться извне VM
         public string FullName { get; }
-
 
         public int GetModelId()
         {
@@ -52,7 +50,7 @@ namespace Ynost.ViewModels
         {
             var newItem = new AcademicYearResult(DateTime.Now.Year, "Новый предмет", null, null, null, null, null, null, null);
             AcademicResults.Add(newItem);
-            SelectedAcademicResult = newItem; // Автоматически выбираем добавленный элемент
+            // SelectedAcademicResult = newItem; // Убрали автоматический выбор
         }
         [RelayCommand(CanExecute = nameof(CanDeleteAcademicResult))]
         private void DeleteAcademicResult()
@@ -60,7 +58,7 @@ namespace Ynost.ViewModels
             if (SelectedAcademicResult != null)
             {
                 AcademicResults.Remove(SelectedAcademicResult);
-                SelectedAcademicResult = null; // Сбрасываем выбор
+                SelectedAcademicResult = null;
             }
         }
         private bool CanDeleteAcademicResult() => SelectedAcademicResult != null;
@@ -76,7 +74,7 @@ namespace Ynost.ViewModels
         {
             var newItem = new EgeResult("Новый предмет", "Класс", 0, 0, 0, 0, 0, null);
             EgeResults.Add(newItem);
-            SelectedEgeResult = newItem;
+            // SelectedEgeResult = newItem; // Убрали автоматический выбор
         }
         [RelayCommand(CanExecute = nameof(CanDeleteEgeResult))]
         private void DeleteEgeResult()
@@ -100,7 +98,7 @@ namespace Ynost.ViewModels
         {
             var newItem = new OgeResult("Новый предмет", "Класс", 0, 0, 0, 0, 0, 0, null);
             OgeResults.Add(newItem);
-            SelectedOgeResult = newItem;
+            // SelectedOgeResult = newItem; // Убрали автоматический выбор
         }
         [RelayCommand(CanExecute = nameof(CanDeleteOgeResult))]
         private void DeleteOgeResult()
@@ -124,7 +122,7 @@ namespace Ynost.ViewModels
         {
             var newItem = new IndependentAssessment("Процедура", DateTime.Now, "Класс/Предмет", 0, 0, 0, null);
             IndependentAssessments.Add(newItem);
-            SelectedIndependentAssessment = newItem;
+            // SelectedIndependentAssessment = newItem; // Убрали автоматический выбор
         }
         [RelayCommand(CanExecute = nameof(CanDeleteIndependentAssessment))]
         private void DeleteIndependentAssessment()
@@ -148,7 +146,7 @@ namespace Ynost.ViewModels
         {
             var newItem = new SelfDeterminationActivity("Уровень", "Мероприятие", "Роль", null);
             SelfDeterminations.Add(newItem);
-            SelectedSelfDetermination = newItem;
+            // SelectedSelfDetermination = newItem; // Убрали автоматический выбор
         }
         [RelayCommand(CanExecute = nameof(CanDeleteSelfDetermination))]
         private void DeleteSelfDetermination()
@@ -172,7 +170,6 @@ namespace Ynost.ViewModels
         {
             var newItem = new StudentOlympiad("Уровень", "Название", "Форма", "Ученик", "Результат", null);
             StudentOlympiads.Add(newItem);
-            SelectedStudentOlympiad = newItem;
         }
         [RelayCommand(CanExecute = nameof(CanDeleteStudentOlympiad))]
         private void DeleteStudentOlympiad()
@@ -196,7 +193,6 @@ namespace Ynost.ViewModels
         {
             var newItem = new JuryActivity("Уровень", "Событие", DateTime.Now, null);
             JuryActivities.Add(newItem);
-            SelectedJuryActivity = newItem;
         }
         [RelayCommand(CanExecute = nameof(CanDeleteJuryActivity))]
         private void DeleteJuryActivity()
@@ -220,7 +216,6 @@ namespace Ynost.ViewModels
         {
             var newItem = new MasterClass("Уровень", "Тема", DateTime.Now, null);
             MasterClasses.Add(newItem);
-            SelectedMasterClass = newItem;
         }
         [RelayCommand(CanExecute = nameof(CanDeleteMasterClass))]
         private void DeleteMasterClass()
@@ -244,7 +239,6 @@ namespace Ynost.ViewModels
         {
             var newItem = new Speech("Уровень", "Тема", DateTime.Now, null);
             Speeches.Add(newItem);
-            SelectedSpeech = newItem;
         }
         [RelayCommand(CanExecute = nameof(CanDeleteSpeech))]
         private void DeleteSpeech()
@@ -268,7 +262,6 @@ namespace Ynost.ViewModels
         {
             var newItem = new Publication("Уровень", "Название", DateTime.Now, null);
             Publications.Add(newItem);
-            SelectedPublication = newItem;
         }
         [RelayCommand(CanExecute = nameof(CanDeletePublication))]
         private void DeletePublication()
@@ -292,7 +285,6 @@ namespace Ynost.ViewModels
         {
             var newItem = new TrainingCourse("Название курса", 0, DateTime.Now.Year, "Организация", null);
             Trainings.Add(newItem);
-            SelectedTrainingCourse = newItem;
         }
         [RelayCommand(CanExecute = nameof(CanDeleteTrainingCourse))]
         private void DeleteTrainingCourse()
@@ -316,7 +308,6 @@ namespace Ynost.ViewModels
         {
             var newItem = new ExperimentalProject("Название проекта", DateTime.Now, null);
             ExperimentalProjects.Add(newItem);
-            SelectedExperimentalProject = newItem;
         }
         [RelayCommand(CanExecute = nameof(CanDeleteExperimentalProject))]
         private void DeleteExperimentalProject()
@@ -340,7 +331,6 @@ namespace Ynost.ViewModels
         {
             var newItem = new Mentorship("Наставляемый", "Приказ", DateTime.Now, null);
             Mentorships.Add(newItem);
-            SelectedMentorship = newItem;
         }
         [RelayCommand(CanExecute = nameof(CanDeleteMentorship))]
         private void DeleteMentorship()
@@ -364,7 +354,6 @@ namespace Ynost.ViewModels
         {
             var newItem = new ProgramMethodSupport("Название программы", false, null);
             ProgramSupports.Add(newItem);
-            SelectedProgramSupport = newItem;
         }
         [RelayCommand(CanExecute = nameof(CanDeleteProgramSupport))]
         private void DeleteProgramSupport()
@@ -388,7 +377,6 @@ namespace Ynost.ViewModels
         {
             var newItem = new ProfessionalCompetition("Уровень", "Конкурс", "Достижение", DateTime.Now, null);
             ProfessionalCompetitions.Add(newItem);
-            SelectedProfessionalCompetition = newItem;
         }
         [RelayCommand(CanExecute = nameof(CanDeleteProfessionalCompetition))]
         private void DeleteProfessionalCompetition()
