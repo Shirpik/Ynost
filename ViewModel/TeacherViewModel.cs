@@ -25,7 +25,6 @@ namespace Ynost.ViewModels
             MasterClasses = new ObservableCollection<MasterClass>(model.MasterClasses);
             Speeches = new ObservableCollection<Speech>(model.Speeches);
             Publications = new ObservableCollection<Publication>(model.Publications);
-            Trainings = new ObservableCollection<TrainingCourse>(model.Trainings);
             ExperimentalProjects = new ObservableCollection<ExperimentalProject>(model.ExperimentalProjects);
             Mentorships = new ObservableCollection<Mentorship>(model.Mentorships);
             ProgramSupports = new ObservableCollection<ProgramMethodSupport>(model.ProgramSupports);
@@ -274,30 +273,7 @@ namespace Ynost.ViewModels
         }
         private bool CanDeletePublication() => SelectedPublication != null;
 
-        // 11. TrainingCourse
-        public ObservableCollection<TrainingCourse> Trainings { get; }
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(DeleteTrainingCourseCommand))]
-        private TrainingCourse? selectedTrainingCourse;
-
-        [RelayCommand]
-        private void AddTrainingCourse()
-        {
-            var newItem = new TrainingCourse("Название курса", 0, DateTime.Now.Year, "Организация", null);
-            Trainings.Add(newItem);
-        }
-        [RelayCommand(CanExecute = nameof(CanDeleteTrainingCourse))]
-        private void DeleteTrainingCourse()
-        {
-            if (SelectedTrainingCourse != null)
-            {
-                Trainings.Remove(SelectedTrainingCourse);
-                SelectedTrainingCourse = null;
-            }
-        }
-        private bool CanDeleteTrainingCourse() => SelectedTrainingCourse != null;
-
-        // 12. ExperimentalProject
+        // 11. ExperimentalProject
         public ObservableCollection<ExperimentalProject> ExperimentalProjects { get; }
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(DeleteExperimentalProjectCommand))]
@@ -320,7 +296,7 @@ namespace Ynost.ViewModels
         }
         private bool CanDeleteExperimentalProject() => SelectedExperimentalProject != null;
 
-        // 13. Mentorship
+        // 12. Mentorship
         public ObservableCollection<Mentorship> Mentorships { get; }
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(DeleteMentorshipCommand))]
@@ -343,7 +319,7 @@ namespace Ynost.ViewModels
         }
         private bool CanDeleteMentorship() => SelectedMentorship != null;
 
-        // 14. ProgramMethodSupport
+        // 13. ProgramMethodSupport
         public ObservableCollection<ProgramMethodSupport> ProgramSupports { get; }
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(DeleteProgramSupportCommand))]
@@ -366,7 +342,7 @@ namespace Ynost.ViewModels
         }
         private bool CanDeleteProgramSupport() => SelectedProgramSupport != null;
 
-        // 15. ProfessionalCompetition
+        // 14. ProfessionalCompetition
         public ObservableCollection<ProfessionalCompetition> ProfessionalCompetitions { get; }
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(DeleteProfessionalCompetitionCommand))]

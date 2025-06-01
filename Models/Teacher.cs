@@ -15,7 +15,6 @@ public class Teacher
     public List<MasterClass> MasterClasses { get; } = new();
     public List<Speech> Speeches { get; } = new();
     public List<Publication> Publications { get; } = new();
-    public List<TrainingCourse> Trainings { get; } = new();
     public List<ExperimentalProject> ExperimentalProjects { get; } = new();
     public List<Mentorship> Mentorships { get; } = new();
     public List<ProgramMethodSupport> ProgramSupports { get; } = new();

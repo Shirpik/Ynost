@@ -24,9 +24,6 @@ internal static class DemoTeacherFactory
         t.Mentorships.Add(new Mentorship("Сидоров С.С.", "№15-н", new DateTime(2023, 9, 10), null));
         t.ProgramSupports.Add(new ProgramMethodSupport("Алгебра 7–9", true, null));
         t.ProfessionalCompetitions.Add(new ProfessionalCompetition("федеральный", "Учитель года", "участник", new DateTime(2023, 5, 15), null));
-        t.Trainings.AddRange(new[] {
-            new TrainingCourse("ИКТ в образовании",72,2024,"ИРО",null),
-            new TrainingCourse("Практикум CLIL",36,2023,"МГПУ",null)});
         return new TeacherViewModel(t);
     }
 
@@ -48,9 +45,6 @@ internal static class DemoTeacherFactory
         p.Mentorships.Add(new Mentorship("Кузнецов К.К.", "№12-к", new DateTime(2023, 9, 12), null));
         p.ProgramSupports.Add(new ProgramMethodSupport("Физика 10–11", true, null));
         p.ProfessionalCompetitions.Add(new ProfessionalCompetition("региональный", "Учитель года", "финалист", new DateTime(2022, 5, 20), null));
-        p.Trainings.AddRange(new[] {
-            new TrainingCourse("STEM-обучение",48,2023,"ФИРО",null),
-            new TrainingCourse("VR-технологии",24,2024,"Физмат-центр",null)});
         return new TeacherViewModel(p);
     }
 }
