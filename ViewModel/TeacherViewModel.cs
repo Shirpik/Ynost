@@ -16,8 +16,8 @@ namespace Ynost.ViewModels
             FullName = model.FullName;
 
             AcademicResults = new ObservableCollection<AcademicYearResult>(model.AcademicResults);
-            EgeResults = new ObservableCollection<EgeResult>(model.EgeResults);
-            OgeResults = new ObservableCollection<OgeResult>(model.OgeResults);
+            GiaResults = new ObservableCollection<GiaResult>(model.GiaResults); // Новое
+            DemoExamResults = new ObservableCollection<DemoExamResult>(model.DemoExamResults); // Новое
             IndependentAssessments = new ObservableCollection<IndependentAssessment>(model.IndependentAssessments);
             SelfDeterminations = new ObservableCollection<SelfDeterminationActivity>(model.SelfDeterminations);
             StudentOlympiads = new ObservableCollection<StudentOlympiad>(model.StudentOlympiads);
@@ -38,7 +38,7 @@ namespace Ynost.ViewModels
             return _model.Id;
         }
 
-        // 1. AcademicYearResult
+        // 1. AcademicYearResult (Итоговые результаты успеваемости)
         public ObservableCollection<AcademicYearResult> AcademicResults { get; }
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(DeleteAcademicResultCommand))]
@@ -49,7 +49,6 @@ namespace Ynost.ViewModels
         {
             var newItem = new AcademicYearResult(DateTime.Now.Year, "Новый предмет", null, null, null, null, null, null, null);
             AcademicResults.Add(newItem);
-            // SelectedAcademicResult = newItem; // Убрали автоматический выбор
         }
         [RelayCommand(CanExecute = nameof(CanDeleteAcademicResult))]
         private void DeleteAcademicResult()
@@ -62,55 +61,53 @@ namespace Ynost.ViewModels
         }
         private bool CanDeleteAcademicResult() => SelectedAcademicResult != null;
 
-        // 2. EgeResult
-        public ObservableCollection<EgeResult> EgeResults { get; }
+        // 2. GiaResult (Результаты ГИА) - НОВОЕ
+        public ObservableCollection<GiaResult> GiaResults { get; }
         [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(DeleteEgeResultCommand))]
-        private EgeResult? selectedEgeResult;
+        [NotifyCanExecuteChangedFor(nameof(DeleteGiaResultCommand))]
+        private GiaResult? selectedGiaResult;
 
         [RelayCommand]
-        private void AddEgeResult()
+        private void AddGiaResult()
         {
-            var newItem = new EgeResult("Новый предмет", "Класс", 0, 0, 0, 0, 0, null);
-            EgeResults.Add(newItem);
-            // SelectedEgeResult = newItem; // Убрали автоматический выбор
+            var newItem = new GiaResult("Предмет ГИА", "Класс", null, null, null, null, null, null, null, null);
+            GiaResults.Add(newItem);
         }
-        [RelayCommand(CanExecute = nameof(CanDeleteEgeResult))]
-        private void DeleteEgeResult()
+        [RelayCommand(CanExecute = nameof(CanDeleteGiaResult))]
+        private void DeleteGiaResult()
         {
-            if (SelectedEgeResult != null)
+            if (SelectedGiaResult != null)
             {
-                EgeResults.Remove(SelectedEgeResult);
-                SelectedEgeResult = null;
+                GiaResults.Remove(SelectedGiaResult);
+                SelectedGiaResult = null;
             }
         }
-        private bool CanDeleteEgeResult() => SelectedEgeResult != null;
+        private bool CanDeleteGiaResult() => SelectedGiaResult != null;
 
-        // 3. OgeResult
-        public ObservableCollection<OgeResult> OgeResults { get; }
+        // 3. DemoExamResult (Результаты ДЭ) - НОВОЕ
+        public ObservableCollection<DemoExamResult> DemoExamResults { get; }
         [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(DeleteOgeResultCommand))]
-        private OgeResult? selectedOgeResult;
+        [NotifyCanExecuteChangedFor(nameof(DeleteDemoExamResultCommand))]
+        private DemoExamResult? selectedDemoExamResult;
 
         [RelayCommand]
-        private void AddOgeResult()
+        private void AddDemoExamResult()
         {
-            var newItem = new OgeResult("Новый предмет", "Класс", 0, 0, 0, 0, 0, 0, null);
-            OgeResults.Add(newItem);
-            // SelectedOgeResult = newItem; // Убрали автоматический выбор
+            var newItem = new DemoExamResult("Компетенция ДЭ", "Группа", null, null, null, null, null, null, null);
+            DemoExamResults.Add(newItem);
         }
-        [RelayCommand(CanExecute = nameof(CanDeleteOgeResult))]
-        private void DeleteOgeResult()
+        [RelayCommand(CanExecute = nameof(CanDeleteDemoExamResult))]
+        private void DeleteDemoExamResult()
         {
-            if (SelectedOgeResult != null)
+            if (SelectedDemoExamResult != null)
             {
-                OgeResults.Remove(SelectedOgeResult);
-                SelectedOgeResult = null;
+                DemoExamResults.Remove(SelectedDemoExamResult);
+                SelectedDemoExamResult = null;
             }
         }
-        private bool CanDeleteOgeResult() => SelectedOgeResult != null;
+        private bool CanDeleteDemoExamResult() => SelectedDemoExamResult != null;
 
-        // 4. IndependentAssessment
+        // 4. IndependentAssessment (Независимая оценка)
         public ObservableCollection<IndependentAssessment> IndependentAssessments { get; }
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(DeleteIndependentAssessmentCommand))]
@@ -119,9 +116,9 @@ namespace Ynost.ViewModels
         [RelayCommand]
         private void AddIndependentAssessment()
         {
-            var newItem = new IndependentAssessment("Процедура", DateTime.Now, "Класс/Предмет", 0, 0, 0, null);
+            // AssessmentName, AssessmentDate, ClassSubject, StudentsTotal, StudentsParticipated, StudentsPassed, PerformanceRate, LearningQualityRate, SouRate, Link
+            var newItem = new IndependentAssessment("Вид оценки", DateTime.Now, "Класс/Предмет", null, null, null, null, null, null, null);
             IndependentAssessments.Add(newItem);
-            // SelectedIndependentAssessment = newItem; // Убрали автоматический выбор
         }
         [RelayCommand(CanExecute = nameof(CanDeleteIndependentAssessment))]
         private void DeleteIndependentAssessment()
@@ -134,7 +131,7 @@ namespace Ynost.ViewModels
         }
         private bool CanDeleteIndependentAssessment() => SelectedIndependentAssessment != null;
 
-        // 5. SelfDeterminationActivity
+        // 5. SelfDeterminationActivity (Профориентация)
         public ObservableCollection<SelfDeterminationActivity> SelfDeterminations { get; }
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(DeleteSelfDeterminationCommand))]
@@ -145,7 +142,6 @@ namespace Ynost.ViewModels
         {
             var newItem = new SelfDeterminationActivity("Уровень", "Мероприятие", "Роль", null);
             SelfDeterminations.Add(newItem);
-            // SelectedSelfDetermination = newItem; // Убрали автоматический выбор
         }
         [RelayCommand(CanExecute = nameof(CanDeleteSelfDetermination))]
         private void DeleteSelfDetermination()
@@ -158,7 +154,7 @@ namespace Ynost.ViewModels
         }
         private bool CanDeleteSelfDetermination() => SelectedSelfDetermination != null;
 
-        // 6. StudentOlympiad
+        // 6. StudentOlympiad (Олимпиады обучающихся)
         public ObservableCollection<StudentOlympiad> StudentOlympiads { get; }
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(DeleteStudentOlympiadCommand))]
@@ -181,7 +177,7 @@ namespace Ynost.ViewModels
         }
         private bool CanDeleteStudentOlympiad() => SelectedStudentOlympiad != null;
 
-        // 7. JuryActivity
+        // 7. JuryActivity (Работа в жюри)
         public ObservableCollection<JuryActivity> JuryActivities { get; }
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(DeleteJuryActivityCommand))]
@@ -204,7 +200,7 @@ namespace Ynost.ViewModels
         }
         private bool CanDeleteJuryActivity() => SelectedJuryActivity != null;
 
-        // 8. MasterClass
+        // 8. MasterClass (Мастер-классы)
         public ObservableCollection<MasterClass> MasterClasses { get; }
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(DeleteMasterClassCommand))]
@@ -227,7 +223,7 @@ namespace Ynost.ViewModels
         }
         private bool CanDeleteMasterClass() => SelectedMasterClass != null;
 
-        // 9. Speech
+        // 9. Speech (Выступления)
         public ObservableCollection<Speech> Speeches { get; }
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(DeleteSpeechCommand))]
@@ -250,7 +246,7 @@ namespace Ynost.ViewModels
         }
         private bool CanDeleteSpeech() => SelectedSpeech != null;
 
-        // 10. Publication
+        // 10. Publication (Публикации)
         public ObservableCollection<Publication> Publications { get; }
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(DeletePublicationCommand))]
@@ -273,7 +269,7 @@ namespace Ynost.ViewModels
         }
         private bool CanDeletePublication() => SelectedPublication != null;
 
-        // 11. ExperimentalProject
+        // 11. ExperimentalProject (Экспериментальные проекты)
         public ObservableCollection<ExperimentalProject> ExperimentalProjects { get; }
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(DeleteExperimentalProjectCommand))]
@@ -296,7 +292,7 @@ namespace Ynost.ViewModels
         }
         private bool CanDeleteExperimentalProject() => SelectedExperimentalProject != null;
 
-        // 12. Mentorship
+        // 12. Mentorship (Наставничество)
         public ObservableCollection<Mentorship> Mentorships { get; }
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(DeleteMentorshipCommand))]
@@ -319,7 +315,7 @@ namespace Ynost.ViewModels
         }
         private bool CanDeleteMentorship() => SelectedMentorship != null;
 
-        // 13. ProgramMethodSupport
+        // 13. ProgramMethodSupport (Программно-методическое сопровождение)
         public ObservableCollection<ProgramMethodSupport> ProgramSupports { get; }
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(DeleteProgramSupportCommand))]
@@ -342,7 +338,7 @@ namespace Ynost.ViewModels
         }
         private bool CanDeleteProgramSupport() => SelectedProgramSupport != null;
 
-        // 14. ProfessionalCompetition
+        // 14. ProfessionalCompetition (Профессиональные конкурсы)
         public ObservableCollection<ProfessionalCompetition> ProfessionalCompetitions { get; }
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(DeleteProfessionalCompetitionCommand))]
@@ -364,5 +360,7 @@ namespace Ynost.ViewModels
             }
         }
         private bool CanDeleteProfessionalCompetition() => SelectedProfessionalCompetition != null;
+
+        // Логика для Trainings (Курсы повышения квалификации) УДАЛЕНА
     }
 }

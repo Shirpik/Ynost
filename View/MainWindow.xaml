@@ -11,7 +11,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Левая панель -->
+        <!-- Левая панель (без изменений) -->
         <Grid Grid.Column="0" Background="#f3f6ff">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -36,7 +36,7 @@
             <DataGrid x:Name="TeachersGrid"
                       Grid.Row="2"
                       ItemsSource="{Binding Teachers}"
-                      SelectedItem="{Binding SelectedTeacher}"
+                      SelectedItem="{Binding SelectedTeacher, Mode=TwoWay}"
                       AutoGenerateColumns="False"
                       CanUserAddRows="False"
                       IsReadOnly="True"
@@ -59,33 +59,22 @@
                       VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="10">
 
-                <!-- 1. Результаты освоения обучающимися образовательных программ -->
-                <TextBlock Text="1. Результаты освоения обучающимися образовательных программ"
-                           FontWeight="Bold"
-                           Margin="0,8,0,4"/>
+                <!-- 1. Итоговые результаты успеваемости (аттестат) -->
+                <TextBlock Text="1. Итоговые результаты успеваемости (аттестат)" FontWeight="Bold" Margin="0,8,0,4"/>
                 <DataGrid ItemsSource="{Binding SelectedTeacher.AcademicResults}"
                           SelectedItem="{Binding SelectedTeacher.SelectedAcademicResult, Mode=TwoWay}"
-                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="False"
-                          Margin="0,0,0,0"
-                          CanUserAddRows="False">
+                          PreviewMouseWheel="DataGrid_PreviewMouseWheel" AutoGenerateColumns="False" IsReadOnly="False"
+                          Margin="0,0,0,0" CanUserAddRows="False" HorizontalScrollBarVisibility="Auto">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Год"
-                                            Binding="{Binding Year}"
-                                            Width="60"/>
-                        <DataGridTextColumn Header="Предмет"
-                                            Binding="{Binding Subject}"
-                                            Width="150"/>
-                        <DataGridTextColumn Header="Сем 1"
-                                            Binding="{Binding AvgSem1}"
-                                            Width="70"/>
-                        <DataGridTextColumn Header="Сем 2"
-                                            Binding="{Binding AvgSem2}"
-                                            Width="70"/>
-                        <DataGridTextColumn Header="Динамика"
-                                            Binding="{Binding Dynamics}"
-                                            Width="80"/>
+                        <DataGridTextColumn Header="Учебный год" Binding="{Binding Year}" Width="100" MinWidth="90"/>
+                        <DataGridTextColumn Header="Предмет" Binding="{Binding Subject}" Width="180" MinWidth="150"/>
+                        <DataGridTextColumn Header="Ср. балл 1 сем." Binding="{Binding AvgSem1}" Width="120" MinWidth="110"/>
+                        <DataGridTextColumn Header="Ср. балл 2 сем." Binding="{Binding AvgSem2}" Width="120" MinWidth="110"/>
+                        <DataGridTextColumn Header="Динамика" Binding="{Binding Dynamics}" Width="80" MinWidth="70"/>
+                        <DataGridTextColumn Header="Ср. балл успев." Binding="{Binding AvgSuccessRate}" Width="120" MinWidth="110"/>
+                        <DataGridTextColumn Header="Ср. балл кач." Binding="{Binding AvgQualityRate}" Width="110" MinWidth="100"/>
+                        <DataGridTextColumn Header="СОУ" Binding="{Binding SouRate}" Width="70" MinWidth="60"/>
+                        <DataGridTextColumn Header="Ссылка" Binding="{Binding Link}" Width="*" MinWidth="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,0,12">
@@ -93,94 +82,70 @@
                     <Button Content="-" Command="{Binding SelectedTeacher.DeleteAcademicResultCommand}" Margin="5,0,0,0" Padding="5,0" MinWidth="25"/>
                 </StackPanel>
 
-                <!-- 2. ЕГЭ -->
-                <TextBlock Text="2. ЕГЭ" FontWeight="Bold" Margin="0,8,0,4"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.EgeResults}"
-                          SelectedItem="{Binding SelectedTeacher.SelectedEgeResult, Mode=TwoWay}"
-                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="False"
-                          Margin="0,0,0,0"
-                          CanUserAddRows="False">
+                <!-- 2. Результаты государственной итоговой аттестации (ГИА) -->
+                <TextBlock Text="2. Результаты государственной итоговой аттестации (ГИА)" FontWeight="Bold" Margin="0,8,0,4"/>
+                <DataGrid ItemsSource="{Binding SelectedTeacher.GiaResults}"
+                          SelectedItem="{Binding SelectedTeacher.SelectedGiaResult, Mode=TwoWay}"
+                          PreviewMouseWheel="DataGrid_PreviewMouseWheel" AutoGenerateColumns="False" IsReadOnly="False"
+                          Margin="0,0,0,0" CanUserAddRows="False" HorizontalScrollBarVisibility="Auto">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Предмет"
-                                            Binding="{Binding Subject}"
-                                            Width="120"/>
-                        <DataGridTextColumn Header="Класс"
-                                            Binding="{Binding Class}"
-                                            Width="60"/>
-                        <DataGridTextColumn Header="Всего"
-                                            Binding="{Binding Total}"
-                                            Width="60"/>
-                        <DataGridTextColumn Header="% 61-80"
-                                            Binding="{Binding Pct61to80}"
-                                            Width="80"/>
-                        <DataGridTextColumn Header="% Fail"
-                                            Binding="{Binding PctFail}"
-                                            Width="70"/>
+                        <DataGridTextColumn Header="Предмет" Binding="{Binding Subject}" Width="150" MinWidth="130"/>
+                        <DataGridTextColumn Header="Класс" Binding="{Binding Class}" Width="70" MinWidth="60"/>
+                        <DataGridTextColumn Header="Кол-во участников" Binding="{Binding TotalParticipants}" Width="130" MinWidth="120"/>
+                        <DataGridTextColumn Header="% «5»" Binding="{Binding PctMark5}" Width="70" MinWidth="60"/>
+                        <DataGridTextColumn Header="% «4»" Binding="{Binding PctMark4}" Width="70" MinWidth="60"/>
+                        <DataGridTextColumn Header="% «3»" Binding="{Binding PctMark3}" Width="70" MinWidth="60"/>
+                        <DataGridTextColumn Header="% «2»/неуд." Binding="{Binding PctFail}" Width="100" MinWidth="90"/>
+                        <DataGridTextColumn Header="Средний балл" Binding="{Binding AvgScore}" Width="100" MinWidth="90"/>
+                        <DataGridTextColumn Header="Ссылка" Binding="{Binding Link}" Width="*" MinWidth="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,0,12">
-                    <Button Content="+" Command="{Binding SelectedTeacher.AddEgeResultCommand}" Padding="5,0" MinWidth="25"/>
-                    <Button Content="-" Command="{Binding SelectedTeacher.DeleteEgeResultCommand}" Margin="5,0,0,0" Padding="5,0" MinWidth="25"/>
+                    <Button Content="+" Command="{Binding SelectedTeacher.AddGiaResultCommand}" Padding="5,0" MinWidth="25"/>
+                    <Button Content="-" Command="{Binding SelectedTeacher.DeleteGiaResultCommand}" Margin="5,0,0,0" Padding="5,0" MinWidth="25"/>
                 </StackPanel>
 
-                <!-- 3. ОГЭ -->
-                <TextBlock Text="3. ОГЭ" FontWeight="Bold" Margin="0,8,0,4"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.OgeResults}"
-                          SelectedItem="{Binding SelectedTeacher.SelectedOgeResult, Mode=TwoWay}"
-                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="False"
-                          Margin="0,0,0,0"
-                          CanUserAddRows="False">
+                <!-- 3. Результаты государственной аттестации (ДЭ) -->
+                <TextBlock Text="3. Результаты государственной аттестации (ДЭ)" FontWeight="Bold" Margin="0,8,0,4"/>
+                <DataGrid ItemsSource="{Binding SelectedTeacher.DemoExamResults}"
+                          SelectedItem="{Binding SelectedTeacher.SelectedDemoExamResult, Mode=TwoWay}"
+                          PreviewMouseWheel="DataGrid_PreviewMouseWheel" AutoGenerateColumns="False" IsReadOnly="False"
+                          Margin="0,0,0,0" CanUserAddRows="False" HorizontalScrollBarVisibility="Auto">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Предмет"
-                                            Binding="{Binding Subject}"
-                                            Width="120"/>
-                        <DataGridTextColumn Header="Класс"
-                                            Binding="{Binding Class}"
-                                            Width="60"/>
-                        <DataGridTextColumn Header="Всего"
-                                            Binding="{Binding Total}"
-                                            Width="60"/>
-                        <DataGridTextColumn Header="5"
-                                            Binding="{Binding Mark5}"
-                                            Width="40"/>
-                        <DataGridTextColumn Header="Средний"
-                                            Binding="{Binding Avg}"
-                                            Width="70"/>
+                        <DataGridTextColumn Header="Наименование компетенции" Binding="{Binding Subject}" Width="200" MinWidth="180"/>
+                        <DataGridTextColumn Header="Группа" Binding="{Binding Group}" Width="80" MinWidth="70"/>
+                        <DataGridTextColumn Header="Кол-во участников" Binding="{Binding TotalParticipants}" Width="130" MinWidth="120"/>
+                        <DataGridTextColumn Header="% «5»" Binding="{Binding PctMark5}" Width="70" MinWidth="60"/>
+                        <DataGridTextColumn Header="% «4»" Binding="{Binding PctMark4}" Width="70" MinWidth="60"/>
+                        <DataGridTextColumn Header="% «3»" Binding="{Binding PctMark3}" Width="70" MinWidth="60"/>
+                        <DataGridTextColumn Header="% «2»" Binding="{Binding PctMark2}" Width="70" MinWidth="60"/>
+                        <DataGridTextColumn Header="Средний балл" Binding="{Binding AvgScore}" Width="100" MinWidth="90"/>
+                        <DataGridTextColumn Header="Ссылка" Binding="{Binding Link}" Width="*" MinWidth="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,0,12">
-                    <Button Content="+" Command="{Binding SelectedTeacher.AddOgeResultCommand}" Padding="5,0" MinWidth="25"/>
-                    <Button Content="-" Command="{Binding SelectedTeacher.DeleteOgeResultCommand}" Margin="5,0,0,0" Padding="5,0" MinWidth="25"/>
+                    <Button Content="+" Command="{Binding SelectedTeacher.AddDemoExamResultCommand}" Padding="5,0" MinWidth="25"/>
+                    <Button Content="-" Command="{Binding SelectedTeacher.DeleteDemoExamResultCommand}" Margin="5,0,0,0" Padding="5,0" MinWidth="25"/>
                 </StackPanel>
 
-                <!-- 4. ВПР / НОКО / PISA -->
-                <TextBlock Text="4. ВПР / НОКО / PISA"
-                           FontWeight="Bold"
-                           Margin="0,8,0,4"/>
+                <!-- 4. Результаты освоения обучающимися образовательных программ по итогам независимой оценки качества образования -->
+                <TextBlock Text="4. Результаты освоения обучающимися образовательных программ по итогам независимой оценки качества образования"
+                           FontWeight="Bold" TextWrapping="Wrap" Margin="0,8,0,4"/>
                 <DataGrid ItemsSource="{Binding SelectedTeacher.IndependentAssessments}"
                           SelectedItem="{Binding SelectedTeacher.SelectedIndependentAssessment, Mode=TwoWay}"
-                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="False"
-                          Margin="0,0,0,0"
-                          CanUserAddRows="False">
+                          PreviewMouseWheel="DataGrid_PreviewMouseWheel" AutoGenerateColumns="False" IsReadOnly="False"
+                          Margin="0,0,0,0" CanUserAddRows="False" HorizontalScrollBarVisibility="Auto">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Процедура"
-                                            Binding="{Binding Procedure}"
-                                            Width="120"/>
-                        <DataGridTextColumn Header="Год"
-                                            Binding="{Binding Date, StringFormat=yyyy}"
-                                            Width="60"/>
-                        <DataGridTextColumn Header="Класс/Предмет"
-                                            Binding="{Binding ClassSubject}"
-                                            Width="140"/>
-                        <DataGridTextColumn Header="Успешно"
-                                            Binding="{Binding Passed}"
-                                            Width="70"/>
+                        <DataGridTextColumn Header="Вид НОКО (организация)" Binding="{Binding AssessmentName}" Width="180" MinWidth="160"/>
+                        <DataGridTextColumn Header="Дата" Binding="{Binding AssessmentDate, StringFormat=d}" Width="90" MinWidth="80"/>
+                        <DataGridTextColumn Header="Класс/Предмет" Binding="{Binding ClassSubject}" Width="130" MinWidth="120"/>
+                        <DataGridTextColumn Header="Кол-во всего" Binding="{Binding StudentsTotal}" Width="100" MinWidth="90"/>
+                        <DataGridTextColumn Header="Кол-во участие" Binding="{Binding StudentsParticipated}" Width="110" MinWidth="100"/>
+                        <DataGridTextColumn Header="Кол-во справились" Binding="{Binding StudentsPassed}" Width="120" MinWidth="110"/>
+                        <DataGridTextColumn Header="% успеваемости" Binding="{Binding PerformanceRate}" Width="120" MinWidth="110"/>
+                        <DataGridTextColumn Header="% обученности" Binding="{Binding LearningQualityRate}" Width="120" MinWidth="110"/>
+                        <DataGridTextColumn Header="% СОУ" Binding="{Binding SouRate}" Width="80" MinWidth="70"/>
+                        <DataGridTextColumn Header="Ссылка" Binding="{Binding Link}" Width="*" MinWidth="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,0,12">
@@ -188,27 +153,20 @@
                     <Button Content="-" Command="{Binding SelectedTeacher.DeleteIndependentAssessmentCommand}" Margin="5,0,0,0" Padding="5,0" MinWidth="25"/>
                 </StackPanel>
 
-                <!-- 5. Профориентация -->
-                <TextBlock Text="5. Профориентация"
-                           FontWeight="Bold"
-                           Margin="0,8,0,4"/>
+                <!-- Остальные таблицы по аналогии: добавляем MinWidth к текстовым колонкам -->
+
+                <!-- 5. Деятельность по раннему самоопределению ... -->
+                <TextBlock Text="5. Деятельность по раннему самоопределению и профессиональной ориентации обучающихся"
+                           FontWeight="Bold" TextWrapping="Wrap" Margin="0,8,0,4"/>
                 <DataGrid ItemsSource="{Binding SelectedTeacher.SelfDeterminations}"
                           SelectedItem="{Binding SelectedTeacher.SelectedSelfDetermination, Mode=TwoWay}"
-                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="False"
-                          Margin="0,0,0,0"
-                          CanUserAddRows="False">
+                          PreviewMouseWheel="DataGrid_PreviewMouseWheel" AutoGenerateColumns="False" IsReadOnly="False"
+                          Margin="0,0,0,0" CanUserAddRows="False" HorizontalScrollBarVisibility="Auto">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Уровень"
-                                            Binding="{Binding Level}"
-                                            Width="100"/>
-                        <DataGridTextColumn Header="Мероприятие"
-                                            Binding="{Binding Name}"
-                                            Width="180"/>
-                        <DataGridTextColumn Header="Роль"
-                                            Binding="{Binding Role}"
-                                            Width="100"/>
+                        <DataGridTextColumn Header="Уровень" Binding="{Binding Level}" Width="120" MinWidth="100"/>
+                        <DataGridTextColumn Header="Наименование мероприятия" Binding="{Binding Name}" Width="250" MinWidth="220"/>
+                        <DataGridTextColumn Header="Роль педагога" Binding="{Binding Role}" Width="150" MinWidth="130"/>
+                        <DataGridTextColumn Header="Ссылка" Binding="{Binding Link}" Width="*" MinWidth="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,0,12">
@@ -216,33 +174,20 @@
                     <Button Content="-" Command="{Binding SelectedTeacher.DeleteSelfDeterminationCommand}" Margin="5,0,0,0" Padding="5,0" MinWidth="25"/>
                 </StackPanel>
 
-                <!-- 6. Олимпиады / конкурсы обучающихся -->
-                <TextBlock Text="6. Олимпиады / конкурсы обучающихся"
-                           FontWeight="Bold"
-                           Margin="0,8,0,4"/>
+                <!-- 6. Участие обучающихся в олимпиадах ... -->
+                <TextBlock Text="6. Участие обучающихся в олимпиадах, конкурсах, фестивалях, соревнованиях (далее – События)"
+                           FontWeight="Bold" TextWrapping="Wrap" Margin="0,8,0,4"/>
                 <DataGrid ItemsSource="{Binding SelectedTeacher.StudentOlympiads}"
                           SelectedItem="{Binding SelectedTeacher.SelectedStudentOlympiad, Mode=TwoWay}"
-                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="False"
-                          Margin="0,0,0,0"
-                          CanUserAddRows="False">
+                          PreviewMouseWheel="DataGrid_PreviewMouseWheel" AutoGenerateColumns="False" IsReadOnly="False"
+                          Margin="0,0,0,0" CanUserAddRows="False" HorizontalScrollBarVisibility="Auto">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Уровень"
-                                            Binding="{Binding Level}"
-                                            Width="100"/>
-                        <DataGridTextColumn Header="Название"
-                                            Binding="{Binding Name}"
-                                            Width="160"/>
-                        <DataGridTextColumn Header="Форма"
-                                            Binding="{Binding Form}"
-                                            Width="70"/>
-                        <DataGridTextColumn Header="Ученик"
-                                            Binding="{Binding Cadet}"
-                                            Width="120"/>
-                        <DataGridTextColumn Header="Результат"
-                                            Binding="{Binding Result}"
-                                            Width="100"/>
+                        <DataGridTextColumn Header="Уровень" Binding="{Binding Level}" Width="120" MinWidth="100"/>
+                        <DataGridTextColumn Header="Наименование События" Binding="{Binding Name}" Width="220" MinWidth="200"/>
+                        <DataGridTextColumn Header="Форма участия" Binding="{Binding Form}" Width="120" MinWidth="100"/>
+                        <DataGridTextColumn Header="ФИО участника/кадета" Binding="{Binding Cadet}" Width="200" MinWidth="180"/>
+                        <DataGridTextColumn Header="Результат" Binding="{Binding Result}" Width="120" MinWidth="100"/>
+                        <DataGridTextColumn Header="Ссылка" Binding="{Binding Link}" Width="*" MinWidth="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,0,12">
@@ -250,27 +195,15 @@
                     <Button Content="-" Command="{Binding SelectedTeacher.DeleteStudentOlympiadCommand}" Margin="5,0,0,0" Padding="5,0" MinWidth="25"/>
                 </StackPanel>
 
-                <!-- 7. Работа в составе жюри -->
-                <TextBlock Text="7. Работа в составе жюри"
-                           FontWeight="Bold"
-                           Margin="0,8,0,4"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.JuryActivities}"
-                          SelectedItem="{Binding SelectedTeacher.SelectedJuryActivity, Mode=TwoWay}"
-                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="False"
-                          Margin="0,0,0,0"
-                          CanUserAddRows="False">
+                <!-- И так далее для всех остальных таблиц... -->
+                <!-- 7. Деятельность в качестве члена жюри ... -->
+                <TextBlock Text="7. Деятельность в качестве члена жюри олимпиад, конкурсов" FontWeight="Bold" TextWrapping="Wrap" Margin="0,8,0,4"/>
+                <DataGrid ItemsSource="{Binding SelectedTeacher.JuryActivities}" SelectedItem="{Binding SelectedTeacher.SelectedJuryActivity, Mode=TwoWay}" PreviewMouseWheel="DataGrid_PreviewMouseWheel" AutoGenerateColumns="False" IsReadOnly="False" Margin="0,0,0,0" CanUserAddRows="False" HorizontalScrollBarVisibility="Auto">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Уровень"
-                                            Binding="{Binding Level}"
-                                            Width="100"/>
-                        <DataGridTextColumn Header="Событие"
-                                            Binding="{Binding Name}"
-                                            Width="180"/>
-                        <DataGridTextColumn Header="Дата"
-                                            Binding="{Binding Date, StringFormat=d}"
-                                            Width="100"/>
+                        <DataGridTextColumn Header="Уровень" Binding="{Binding Level}" Width="120" MinWidth="100"/>
+                        <DataGridTextColumn Header="Наименование мероприятия" Binding="{Binding Name}" Width="250" MinWidth="220"/>
+                        <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat=d}" Width="100" MinWidth="90"/>
+                        <DataGridTextColumn Header="Ссылка" Binding="{Binding Link}" Width="*" MinWidth="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,0,12">
@@ -278,27 +211,14 @@
                     <Button Content="-" Command="{Binding SelectedTeacher.DeleteJuryActivityCommand}" Margin="5,0,0,0" Padding="5,0" MinWidth="25"/>
                 </StackPanel>
 
-                <!-- 8. Мастер-классы / открытые уроки -->
-                <TextBlock Text="8. Мастер-классы / открытые уроки"
-                           FontWeight="Bold"
-                           Margin="0,8,0,4"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.MasterClasses}"
-                          SelectedItem="{Binding SelectedTeacher.SelectedMasterClass, Mode=TwoWay}"
-                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="False"
-                          Margin="0,0,0,0"
-                          CanUserAddRows="False">
+                <!-- 8. Проведение мастер-классов ... -->
+                <TextBlock Text="8. Проведение мастер-классов, открытых занятий, мероприятий" FontWeight="Bold" TextWrapping="Wrap" Margin="0,8,0,4"/>
+                <DataGrid ItemsSource="{Binding SelectedTeacher.MasterClasses}" SelectedItem="{Binding SelectedTeacher.SelectedMasterClass, Mode=TwoWay}" PreviewMouseWheel="DataGrid_PreviewMouseWheel" AutoGenerateColumns="False" IsReadOnly="False" Margin="0,0,0,0" CanUserAddRows="False" HorizontalScrollBarVisibility="Auto">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Уровень"
-                                            Binding="{Binding Level}"
-                                            Width="100"/>
-                        <DataGridTextColumn Header="Тема"
-                                            Binding="{Binding Name}"
-                                            Width="200"/>
-                        <DataGridTextColumn Header="Дата"
-                                            Binding="{Binding Date, StringFormat=d}"
-                                            Width="100"/>
+                        <DataGridTextColumn Header="Уровень" Binding="{Binding Level}" Width="120" MinWidth="100"/>
+                        <DataGridTextColumn Header="Наименование" Binding="{Binding Name}" Width="250" MinWidth="220"/>
+                        <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat=d}" Width="100" MinWidth="90"/>
+                        <DataGridTextColumn Header="Ссылка" Binding="{Binding Link}" Width="*" MinWidth="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,0,12">
@@ -306,27 +226,14 @@
                     <Button Content="-" Command="{Binding SelectedTeacher.DeleteMasterClassCommand}" Margin="5,0,0,0" Padding="5,0" MinWidth="25"/>
                 </StackPanel>
 
-                <!-- 9. Выступления -->
-                <TextBlock Text="9. Выступления"
-                           FontWeight="Bold"
-                           Margin="0,8,0,4"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.Speeches}"
-                          SelectedItem="{Binding SelectedTeacher.SelectedSpeech, Mode=TwoWay}"
-                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="False"
-                          Margin="0,0,0,0"
-                          CanUserAddRows="False">
+                <!-- 9. Наличие выступлений ... -->
+                <TextBlock Text="9. Наличие выступлений на научно-практических конференциях (семинарах, педагогических чтениях, симпозиумах, круглых столах)" FontWeight="Bold" TextWrapping="Wrap" Margin="0,8,0,4"/>
+                <DataGrid ItemsSource="{Binding SelectedTeacher.Speeches}" SelectedItem="{Binding SelectedTeacher.SelectedSpeech, Mode=TwoWay}" PreviewMouseWheel="DataGrid_PreviewMouseWheel" AutoGenerateColumns="False" IsReadOnly="False" Margin="0,0,0,0" CanUserAddRows="False" HorizontalScrollBarVisibility="Auto">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Уровень"
-                                            Binding="{Binding Level}"
-                                            Width="100"/>
-                        <DataGridTextColumn Header="Тема"
-                                            Binding="{Binding Name}"
-                                            Width="200"/>
-                        <DataGridTextColumn Header="Дата"
-                                            Binding="{Binding Date, StringFormat=d}"
-                                            Width="100"/>
+                        <DataGridTextColumn Header="Уровень" Binding="{Binding Level}" Width="120" MinWidth="100"/>
+                        <DataGridTextColumn Header="Наименование" Binding="{Binding Name}" Width="250" MinWidth="220"/>
+                        <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat=d}" Width="100" MinWidth="90"/>
+                        <DataGridTextColumn Header="Ссылка" Binding="{Binding Link}" Width="*" MinWidth="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,0,12">
@@ -334,27 +241,14 @@
                     <Button Content="-" Command="{Binding SelectedTeacher.DeleteSpeechCommand}" Margin="5,0,0,0" Padding="5,0" MinWidth="25"/>
                 </StackPanel>
 
-                <!-- 10. Публикации -->
-                <TextBlock Text="10. Публикации"
-                           FontWeight="Bold"
-                           Margin="0,8,0,4"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.Publications}"
-                          SelectedItem="{Binding SelectedTeacher.SelectedPublication, Mode=TwoWay}"
-                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="False"
-                          Margin="0,0,0,0"
-                          CanUserAddRows="False">
+                <!-- 10. Наличие публикации ... -->
+                <TextBlock Text="10. Наличие публикации (наименование, где, когда опубликована, в том числе в электронном виде)" FontWeight="Bold" TextWrapping="Wrap" Margin="0,8,0,4"/>
+                <DataGrid ItemsSource="{Binding SelectedTeacher.Publications}" SelectedItem="{Binding SelectedTeacher.SelectedPublication, Mode=TwoWay}" PreviewMouseWheel="DataGrid_PreviewMouseWheel" AutoGenerateColumns="False" IsReadOnly="False" Margin="0,0,0,0" CanUserAddRows="False" HorizontalScrollBarVisibility="Auto">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Уровень"
-                                            Binding="{Binding Level}"
-                                            Width="100"/>
-                        <DataGridTextColumn Header="Название"
-                                            Binding="{Binding Title}"
-                                            Width="200"/>
-                        <DataGridTextColumn Header="Дата"
-                                            Binding="{Binding Date, StringFormat=d}"
-                                            Width="100"/>
+                        <DataGridTextColumn Header="Уровень" Binding="{Binding Level}" Width="120" MinWidth="100"/>
+                        <DataGridTextColumn Header="Наименование" Binding="{Binding Title}" Width="250" MinWidth="220"/>
+                        <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat=d}" Width="100" MinWidth="90"/>
+                        <DataGridTextColumn Header="Ссылка" Binding="{Binding Link}" Width="*" MinWidth="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,0,12">
@@ -362,24 +256,13 @@
                     <Button Content="-" Command="{Binding SelectedTeacher.DeletePublicationCommand}" Margin="5,0,0,0" Padding="5,0" MinWidth="25"/>
                 </StackPanel>
 
-                <!-- 11. Экспериментальные проекты -->
-                <TextBlock Text="11. Экспериментальные проекты"
-                           FontWeight="Bold"
-                           Margin="0,8,0,4"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.ExperimentalProjects}"
-                          SelectedItem="{Binding SelectedTeacher.SelectedExperimentalProject, Mode=TwoWay}"
-                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="False"
-                          Margin="0,0,0,0"
-                          CanUserAddRows="False">
+                <!-- 11. Участие в экспериментальной ... -->
+                <TextBlock Text="11. Участие в экспериментальной и инновационной деятельности" FontWeight="Bold" TextWrapping="Wrap" Margin="0,8,0,4"/>
+                <DataGrid ItemsSource="{Binding SelectedTeacher.ExperimentalProjects}" SelectedItem="{Binding SelectedTeacher.SelectedExperimentalProject, Mode=TwoWay}" PreviewMouseWheel="DataGrid_PreviewMouseWheel" AutoGenerateColumns="False" IsReadOnly="False" Margin="0,0,0,0" CanUserAddRows="False" HorizontalScrollBarVisibility="Auto">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Название"
-                                            Binding="{Binding Name}"
-                                            Width="220"/>
-                        <DataGridTextColumn Header="Дата"
-                                            Binding="{Binding Date, StringFormat=d}"
-                                            Width="100"/>
+                        <DataGridTextColumn Header="Наименование проекта" Binding="{Binding Name}" Width="280" MinWidth="250"/>
+                        <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat=d}" Width="100" MinWidth="90"/>
+                        <DataGridTextColumn Header="Ссылка" Binding="{Binding Link}" Width="*" MinWidth="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,0,12">
@@ -387,27 +270,14 @@
                     <Button Content="-" Command="{Binding SelectedTeacher.DeleteExperimentalProjectCommand}" Margin="5,0,0,0" Padding="5,0" MinWidth="25"/>
                 </StackPanel>
 
-                <!-- 12. Наставничество -->
-                <TextBlock Text="12. Наставничество"
-                           FontWeight="Bold"
-                           Margin="0,8,0,4"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.Mentorships}"
-                          SelectedItem="{Binding SelectedTeacher.SelectedMentorship, Mode=TwoWay}"
-                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="False"
-                          Margin="0,0,0,0"
-                          CanUserAddRows="False">
+                <!-- 12. Наставническая деятельность -->
+                <TextBlock Text="12. Наставническая деятельность" FontWeight="Bold" Margin="0,8,0,4"/>
+                <DataGrid ItemsSource="{Binding SelectedTeacher.Mentorships}" SelectedItem="{Binding SelectedTeacher.SelectedMentorship, Mode=TwoWay}" PreviewMouseWheel="DataGrid_PreviewMouseWheel" AutoGenerateColumns="False" IsReadOnly="False" Margin="0,0,0,0" CanUserAddRows="False" HorizontalScrollBarVisibility="Auto">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Наставляемый"
-                                            Binding="{Binding Trainee}"
-                                            Width="160"/>
-                        <DataGridTextColumn Header="Приказ"
-                                            Binding="{Binding Order}"
-                                            Width="120"/>
-                        <DataGridTextColumn Header="Дата"
-                                            Binding="{Binding OrderDate, StringFormat=d}"
-                                            Width="100"/>
+                        <DataGridTextColumn Header="ФИО стажера" Binding="{Binding Trainee}" Width="200" MinWidth="180"/>
+                        <DataGridTextColumn Header="Номер приказа" Binding="{Binding Order}" Width="150" MinWidth="130"/>
+                        <DataGridTextColumn Header="Дата приказа" Binding="{Binding OrderDate, StringFormat=d}" Width="120" MinWidth="110"/>
+                        <DataGridTextColumn Header="Ссылка" Binding="{Binding Link}" Width="*" MinWidth="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,0,12">
@@ -415,24 +285,13 @@
                     <Button Content="-" Command="{Binding SelectedTeacher.DeleteMentorshipCommand}" Margin="5,0,0,0" Padding="5,0" MinWidth="25"/>
                 </StackPanel>
 
-                <!-- 13. Программно-методическое сопровождение -->
-                <TextBlock Text="13. Программно-методическое сопровождение"
-                           FontWeight="Bold"
-                           Margin="0,8,0,4"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.ProgramSupports}"
-                          SelectedItem="{Binding SelectedTeacher.SelectedProgramSupport, Mode=TwoWay}"
-                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="False"
-                          Margin="0,0,0,0"
-                          CanUserAddRows="False">
+                <!-- 13. Разработка программно-методического ... -->
+                <TextBlock Text="13. Разработка программно-методического сопровождения образовательного процесса" FontWeight="Bold" TextWrapping="Wrap" Margin="0,8,0,4"/>
+                <DataGrid ItemsSource="{Binding SelectedTeacher.ProgramSupports}" SelectedItem="{Binding SelectedTeacher.SelectedProgramSupport, Mode=TwoWay}" PreviewMouseWheel="DataGrid_PreviewMouseWheel" AutoGenerateColumns="False" IsReadOnly="False" Margin="0,0,0,0" CanUserAddRows="False" HorizontalScrollBarVisibility="Auto">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Программа"
-                                            Binding="{Binding ProgramName}"
-                                            Width="220"/>
-                        <DataGridCheckBoxColumn Header="Контр. материалы"
-                                                Binding="{Binding HasControlMaterials}"
-                                                Width="140"/>
+                        <DataGridTextColumn Header="Наименование рабочей программы" Binding="{Binding ProgramName}" Width="300" MinWidth="280"/>
+                        <DataGridCheckBoxColumn Header="Контрольно-измерительные материалы" Binding="{Binding HasControlMaterials}" Width="230" MinWidth="220"/>
+                        <DataGridTextColumn Header="Ссылка" Binding="{Binding Link}" Width="*" MinWidth="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,0,12">
@@ -440,36 +299,22 @@
                     <Button Content="-" Command="{Binding SelectedTeacher.DeleteProgramSupportCommand}" Margin="5,0,0,0" Padding="5,0" MinWidth="25"/>
                 </StackPanel>
 
-                <!-- 14. Профессиональные конкурсы -->
-                <TextBlock Text="14. Профессиональные конкурсы"
-                           FontWeight="Bold"
-                           Margin="0,8,0,4"/>
-                <DataGrid ItemsSource="{Binding SelectedTeacher.ProfessionalCompetitions}"
-                          SelectedItem="{Binding SelectedTeacher.SelectedProfessionalCompetition, Mode=TwoWay}"
-                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="False"
-                          Margin="0,0,0,0"
-                          CanUserAddRows="False">
+                <!-- 14. Участие в профессиональных конкурсах -->
+                <TextBlock Text="14. Участие в профессиональных конкурсах" FontWeight="Bold" Margin="0,8,0,4"/>
+                <DataGrid ItemsSource="{Binding SelectedTeacher.ProfessionalCompetitions}" SelectedItem="{Binding SelectedTeacher.SelectedProfessionalCompetition, Mode=TwoWay}" PreviewMouseWheel="DataGrid_PreviewMouseWheel" AutoGenerateColumns="False" IsReadOnly="False" Margin="0,0,0,0" CanUserAddRows="False" HorizontalScrollBarVisibility="Auto">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Уровень"
-                                            Binding="{Binding Level}"
-                                            Width="100"/>
-                        <DataGridTextColumn Header="Конкурс"
-                                            Binding="{Binding Name}"
-                                            Width="180"/>
-                        <DataGridTextColumn Header="Достижение"
-                                            Binding="{Binding Achievement}"
-                                            Width="120"/>
-                        <DataGridTextColumn Header="Дата"
-                                            Binding="{Binding Date, StringFormat=d}"
-                                            Width="100"/>
+                        <DataGridTextColumn Header="Уровень" Binding="{Binding Level}" Width="120" MinWidth="100"/>
+                        <DataGridTextColumn Header="Наименование конкурса" Binding="{Binding Name}" Width="220" MinWidth="200"/>
+                        <DataGridTextColumn Header="Достижение" Binding="{Binding Achievement}" Width="150" MinWidth="130"/>
+                        <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat=d}" Width="100" MinWidth="90"/>
+                        <DataGridTextColumn Header="Ссылка" Binding="{Binding Link}" Width="*" MinWidth="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,0,12">
                     <Button Content="+" Command="{Binding SelectedTeacher.AddProfessionalCompetitionCommand}" Padding="5,0" MinWidth="25"/>
                     <Button Content="-" Command="{Binding SelectedTeacher.DeleteProfessionalCompetitionCommand}" Margin="5,0,0,0" Padding="5,0" MinWidth="25"/>
                 </StackPanel>
+
             </StackPanel>
         </ScrollViewer>
     </Grid>
