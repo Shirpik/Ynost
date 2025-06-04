@@ -6,9 +6,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Media;
-using Ynost.Services;
-using Ynost.ViewModels;
+using System.Windows.Media; // Для VisualTreeHelper
+using Ynost.Services;      // Убедись, что этот неймспейс существует и DatabaseService там
+using Ynost.ViewModels;  // Убедись, что этот неймспейс существует и MainViewModel там
 
 namespace Ynost
 {
@@ -21,6 +21,7 @@ namespace Ynost
         {
             InitializeComponent();
 
+            // Строка подключения - вынесена для наглядности
             var connectionString = "Host=91.192.168.52;Port=5432;Database=ynost_db;Username=teacher_app;Password=T_pass;Ssl Mode=Disable";
             var dbService = new DatabaseService(connectionString);
             _vm = new MainViewModel(dbService);
@@ -28,27 +29,25 @@ namespace Ynost
             DataContext = _vm;
             Loaded += MainWindow_Loaded;
 
-            // Инициализация _logPath должна быть здесь
             _logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ynost.log");
         }
 
         private async void MainWindow_Loaded(object? sender, RoutedEventArgs e)
         {
-            Log("=== Начало загрузки преподавателей (из MainWindow_Loaded) ===");
+            Log("=== Начало загрузки данных при старте окна (MainWindow_Loaded) ===");
             var sw = Stopwatch.StartNew();
             try
             {
-                await _vm.LoadDataAsync(); // Вызов без параметров
+                // MainViewModel сам решит, нужно ли грузить данные (в зависимости от IsLoggedIn)
+                await _vm.LoadDataAsync();
 
                 sw.Stop();
-                Log($"Операция загрузки в MainWindow_Loaded завершена за {sw.ElapsedMilliseconds} ms. Статус ViewModel: {_vm.ConnectionStatusText}");
+                Log($"Операция MainWindow_Loaded завершена за {sw.ElapsedMilliseconds} ms. Статус ViewModel: {_vm.ConnectionStatusText}");
             }
             catch (Exception ex)
             {
-                // Этот catch теперь менее вероятен, если MainViewModel обрабатывает ошибки и не пробрасывает их.
-                // Но на всякий случай оставим для критических непредвиденных ошибок на этом уровне.
                 sw.Stop();
-                Log($"КРИТИЧЕСКАЯ ОШИБКА при вызове LoadDataAsync из MainWindow_Loaded: {ex}");
+                Log($"КРИТИЧЕСКАЯ ОШИБКА при вызове LoadDataAsync из MainWindow_Loaded: {ex.ToString()}"); // ToString() для полной информации об ошибке
                 MessageBox.Show(
                     $"Критическая ошибка при инициализации загрузки:\n{ex.Message}",
                     "Ynost — Ошибка",
@@ -63,8 +62,10 @@ namespace Ynost
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
+            if (_vm == null || _vm.Teachers == null) return;
+
             var view = CollectionViewSource.GetDefaultView(_vm.Teachers);
-            if (view == null) return; 
+            if (view == null) return;
 
             string q = SearchBox.Text.Trim();
 
@@ -75,14 +76,13 @@ namespace Ynost
             else
             {
                 view.Filter = o =>
-                    o is TeacherViewModel t && 
+                    o is TeacherViewModel t &&
                     t.FullName.Contains(q, StringComparison.OrdinalIgnoreCase);
             }
 
             Log($"Фильтр применён: \"{q}\" (осталось {view.Cast<object>().Count()} записей)");
         }
 
-        // Этот метод должен быть здесь
         private void Log(string message)
         {
             try
@@ -90,15 +90,14 @@ namespace Ynost
                 File.AppendAllText(_logPath,
                     $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} {message}{Environment.NewLine}");
             }
-            catch { /* Подавление ошибок логирования, чтобы не нарушать работу приложения */ }
+            catch { /* Подавление ошибок логирования */ }
         }
 
-        // Этот метод должен быть здесь, если он используется в XAML
         private void DataGrid_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
             if (!e.Handled && sender is UIElement)
             {
-                if (DetailsScrollViewer != null) // DetailsScrollViewer должен иметь x:Name в XAML
+                if (DetailsScrollViewer != null)
                 {
                     DetailsScrollViewer.ScrollToVerticalOffset(DetailsScrollViewer.VerticalOffset - e.Delta);
                     e.Handled = true;
@@ -106,6 +105,7 @@ namespace Ynost
             }
         }
 
+        // Обработчик для Enter/Shift+Enter в редактируемых ячейках
         private void EditingTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
@@ -131,9 +131,11 @@ namespace Ynost
                         grid.CommitEdit(DataGridEditingUnit.Row, true);
                     }
                 }
+                // Если нажат Shift+Enter, TextBox с AcceptsReturn=True обработает это как новую строку
             }
         }
-        // Вызывается, когда ячейка входит в режим редактирования
+
+        // Подписка на PreviewKeyDown для TextBox при входе в режим редактирования
         private void DataGrid_PreparingCellForEdit(object sender, DataGridPreparingCellForEditEventArgs e)
         {
             if (e.EditingElement is TextBox textBox)
@@ -143,7 +145,7 @@ namespace Ynost
             }
         }
 
-        // Вызывается, когда редактирование ячейки завершается или отменяется
+        // Отписка от PreviewKeyDown при завершении редактирования
         private void DataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
             if (e.EditingElement is TextBox textBox)
