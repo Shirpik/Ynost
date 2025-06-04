@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 using Ynost.Services;
 using Ynost.ViewModels;
 
@@ -15,7 +16,6 @@ namespace Ynost
     {
         private readonly MainViewModel _vm;
         private readonly string _logPath;
-        // private bool _isDataLoaded = false; // Состояние инициализации теперь в MainViewModel
 
         public MainWindow()
         {
@@ -34,7 +34,6 @@ namespace Ynost
 
         private async void MainWindow_Loaded(object? sender, RoutedEventArgs e)
         {
-            // Флаг _isDataLoaded больше не нужен здесь, MainViewModel сам отслеживает инициализацию
 
             Log("=== Начало загрузки преподавателей (из MainWindow_Loaded) ===");
             var sw = Stopwatch.StartNew();
@@ -71,11 +70,8 @@ namespace Ynost
         // Этот метод должен быть здесь, если он используется в XAML
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            // Убедись, что _vm.Teachers это ObservableCollection<TeacherViewModel>
-            // Если это все еще ObservableCollection<Teacher>, то фильтрация немного изменится
-            // Но исходя из предыдущих правок, это должна быть коллекция TeacherViewModel
             var view = CollectionViewSource.GetDefaultView(_vm.Teachers);
-            if (view == null) return; // Добавим проверку на null
+            if (view == null) return; 
 
             string q = SearchBox.Text.Trim();
 
@@ -86,7 +82,7 @@ namespace Ynost
             else
             {
                 view.Filter = o =>
-                    o is TeacherViewModel t && // Фильтруем по TeacherViewModel
+                    o is TeacherViewModel t && 
                     t.FullName.Contains(q, StringComparison.OrdinalIgnoreCase);
             }
 
@@ -98,7 +94,6 @@ namespace Ynost
         {
             try
             {
-                // Используем _logPath, который инициализируется в конструкторе
                 File.AppendAllText(_logPath,
                     $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} {message}{Environment.NewLine}");
             }
@@ -118,13 +113,57 @@ namespace Ynost
             }
         }
 
-        // Этот метод может быть пустым или удален, если SelectedItem привязан в XAML
-        // и дополнительная логика в CodeBehind не нужна.
-        private void TeachersGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void EditingTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            // Если SelectedItem в TeachersGrid привязан к _vm.SelectedTeacher (Mode=TwoWay),
-            // то этот обработчик может быть не нужен для основной логики MVVM.
-            // Оставляем его, так как он был в твоем коде.
+            if (e.Key == Key.Enter)
+            {
+                var textBox = sender as TextBox;
+                if (textBox == null) return;
+
+                if ((Keyboard.Modifiers & ModifierKeys.Shift) != ModifierKeys.Shift)
+                {
+                    e.Handled = true;
+
+                    // Найти родительский DataGrid
+                    DependencyObject parent = VisualTreeHelper.GetParent(textBox);
+                    DataGrid grid = null;
+                    while (parent != null)
+                    {
+                        grid = parent as DataGrid;
+                        if (grid != null) break;
+                        parent = VisualTreeHelper.GetParent(parent);
+                    }
+
+                    if (grid != null)
+                    {
+                        // Завершить редактирование текущей ячейки/строки
+                        // Это заставит DataGrid выйти из режима редактирования
+                        grid.CommitEdit(DataGridEditingUnit.Row, true);
+                    }
+                }
+                // Если нажат Shift+Enter, TextBox с AcceptsReturn=True обработает это как новую строку
+            }
+        }
+
+        // Вызывается, когда ячейка входит в режим редактирования
+        private void DataGrid_PreparingCellForEdit(object sender, DataGridPreparingCellForEditEventArgs e)
+        {
+            if (e.EditingElement is TextBox textBox)
+            {
+                // Подписываемся на PreviewKeyDown для этого конкретного TextBox
+                textBox.PreviewKeyDown -= EditingTextBox_PreviewKeyDown; // Сначала отпишемся на всякий случай
+                textBox.PreviewKeyDown += EditingTextBox_PreviewKeyDown;
+            }
+        }
+
+        // Вызывается, когда редактирование ячейки завершается или отменяется
+        private void DataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            if (e.EditingElement is TextBox textBox)
+            {
+                // Отписываемся от PreviewKeyDown, чтобы избежать утечек
+                textBox.PreviewKeyDown -= EditingTextBox_PreviewKeyDown;
+            }
         }
     }
 }
