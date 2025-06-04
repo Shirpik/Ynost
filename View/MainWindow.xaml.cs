@@ -16,7 +16,6 @@ namespace Ynost
     {
         private readonly MainViewModel _vm;
         private readonly string _logPath;
-        // private bool _isDataLoaded = false; // Состояние инициализации теперь в MainViewModel
 
         public MainWindow()
         {
@@ -64,11 +63,8 @@ namespace Ynost
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            // Убедись, что _vm.Teachers это ObservableCollection<TeacherViewModel>
-            // Если это все еще ObservableCollection<Teacher>, то фильтрация немного изменится
-            // Но исходя из предыдущих правок, это должна быть коллекция TeacherViewModel
             var view = CollectionViewSource.GetDefaultView(_vm.Teachers);
-            if (view == null) return; // Добавим проверку на null
+            if (view == null) return; 
 
             string q = SearchBox.Text.Trim();
 
@@ -79,7 +75,7 @@ namespace Ynost
             else
             {
                 view.Filter = o =>
-                    o is TeacherViewModel t && // Фильтруем по TeacherViewModel
+                    o is TeacherViewModel t && 
                     t.FullName.Contains(q, StringComparison.OrdinalIgnoreCase);
             }
 
@@ -91,7 +87,6 @@ namespace Ynost
         {
             try
             {
-                // Используем _logPath, который инициализируется в конструкторе
                 File.AppendAllText(_logPath,
                     $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} {message}{Environment.NewLine}");
             }
