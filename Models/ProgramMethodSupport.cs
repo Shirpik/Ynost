@@ -1,5 +1,5 @@
 ﻿namespace Ynost.Models;
 public record ProgramMethodSupport(
-    string ProgramName,
+    string? ProgramName,
     bool HasControlMaterials,
     string? Link);

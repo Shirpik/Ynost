@@ -9,17 +9,18 @@ using Ynost.Models;
 using Ynost.Services;
 using Ynost.ViewModels;
 using Ynost.View;
+using Ynost.Properties;
 
 namespace Ynost.ViewModels
 {
-    public partial class MainViewModel : ObservableObject // Убрали IDisposable, т.к. NetworkService удален
+    public partial class MainViewModel : ObservableObject 
     {
         private readonly DatabaseService _db;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(CanEditData))]
         [NotifyCanExecuteChangedFor(nameof(RetryConnectionCommand))]
-        private bool _isDatabaseConnected; // Теперь это основной флаг доступности БД
+        private bool _isDatabaseConnected; 
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(ShowLoginPrompt))]
@@ -29,7 +30,7 @@ namespace Ynost.ViewModels
         private string _loadingStatus = "Инициализация...";
 
         [ObservableProperty]
-        private bool _isUsingCache; // Если данные были загружены из кеша из-за ошибки БД
+        private bool _isUsingCache; 
 
         [ObservableProperty]
         private string _connectionStatusText = "Определение статуса...";
@@ -75,6 +76,41 @@ namespace Ynost.ViewModels
             ToggleLoginCommand = new RelayCommand(ExecuteToggleLogin);
 
             ConnectionStatusText = "Войдите в систему для начала работы.";
+            if (Settings.Default.RememberLastUser && !string.IsNullOrEmpty(Settings.Default.LastUsername))
+            {
+
+                // проверка пароля (если он хранится хешированным)
+                // валидация сохраненного токена.
+                string savedUser = Settings.Default.LastUsername;
+                string savedPass = Settings.Default.LastPassword; 
+
+                if (savedUser == "admin" && savedPass == "admin") 
+                {
+                    IsLoggedIn = true;
+                    CurrentUserRole = LoginResultRole.Editor;
+                    ConnectionStatusText = $"Автоматический вход как {savedUser}. Загрузка данных...";
+                    _ = LoadDataAsync();
+                }
+                else if (savedUser == "view" && savedPass == "view")
+                {
+                    IsLoggedIn = true;
+                    CurrentUserRole = LoginResultRole.Viewer;
+                    ConnectionStatusText = $"Автоматический вход как {savedUser}. Загрузка данных...";
+                    _ = LoadDataAsync();
+                }
+                else
+                {
+                    Settings.Default.RememberLastUser = false;
+                    Settings.Default.LastUsername = string.Empty;
+                    Settings.Default.LastPassword = string.Empty;
+                    Settings.Default.Save();
+                    ConnectionStatusText = "Войдите в систему для начала работы.";
+                }
+            }
+            else
+            {
+                ConnectionStatusText = "Войдите в систему для начала работы.";
+            }
             UpdateCanEditDataProperty();
         }
 
@@ -88,7 +124,7 @@ namespace Ynost.ViewModels
                 {
                     IsLoggedIn = false;
                     CurrentUserRole = LoginResultRole.None;
-                    IsDatabaseConnected = false; // Сбрасываем статус соединения при выходе
+                    IsDatabaseConnected = false;
                     Teachers.Clear();
                     ConnectionStatusText = "Вы вышли из системы. Войдите для доступа к данным.";
                     LoadingStatus = ConnectionStatusText;
@@ -99,14 +135,15 @@ namespace Ynost.ViewModels
             else
             {
                 var loginWindow = new LoginWindow { Owner = Application.Current.MainWindow };
+                var loginVmContext = loginWindow.DataContext as LoginViewModel;
+
                 bool? dialogResult = loginWindow.ShowDialog();
                 if (dialogResult == true)
                 {
-                    var loginVm = loginWindow.DataContext as LoginViewModel;
-                    if (loginVm != null && loginVm.LoginSuccessful)
+                    if (loginVmContext != null && loginVmContext.LoginSuccessful)
                     {
                         IsLoggedIn = true;
-                        CurrentUserRole = loginVm.AuthenticatedUserRole;
+                        CurrentUserRole = loginVmContext.AuthenticatedUserRole;
                         _ = LoadDataAsync();
                     }
                 }
@@ -117,19 +154,18 @@ namespace Ynost.ViewModels
 
         private void UpdateCanEditDataProperty()
         {
-            // Редактировать можно если: соединение с БД установлено, пользователь вошел И у него есть права редактора
+            // соединение с БД установлено, пользователь вошел и у него есть права редактора
             CanEditData = IsDatabaseConnected && IsLoggedIn && CurrentUserRole == LoginResultRole.Editor;
         }
 
         private bool CanRetryConnection()
         {
-            // Повторить можно, если вошли в систему, но нет соединения с БД И не идет загрузка
+            // вошли в систему, но нет соединения с БД И не идет загрузка
             return IsLoggedIn && !IsDatabaseConnected && !IsLoading && !((AsyncRelayCommand)RetryConnectionCommand).IsRunning;
         }
 
         private void ExecuteSaveChanges()
         {
-            // Проверка IsDatabaseConnected теперь основная
             if (!IsDatabaseConnected)
             {
                 Application.Current.Dispatcher.Invoke(() => MessageBox.Show("Нет соединения с базой данных для сохранения.", "Ошибка сохранения", MessageBoxButton.OK, MessageBoxImage.Warning));
@@ -167,7 +203,6 @@ namespace Ynost.ViewModels
             IsLoading = true;
             LoadingStatus = "Загрузка данных...";
             IsUsingCache = false;
-            // IsDatabaseConnected будет установлен ниже
 
             List<Teacher>? teacherModels = await _db.GetTeachersFromDbAsync();
 
@@ -204,7 +239,7 @@ namespace Ynost.ViewModels
             }
 
             IsLoading = false;
-            LoadingStatus = ConnectionStatusText; // Обновляем общий статус загрузки
+            LoadingStatus = ConnectionStatusText; 
             UpdateCanEditDataProperty();
             ((AsyncRelayCommand)RetryConnectionCommand).NotifyCanExecuteChanged();
             OnPropertyChanged(nameof(ShowLoginPrompt));

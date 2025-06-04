@@ -1,39 +1,39 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Security; // Для SecureString
-
+// Добавь using для настроек
+using Ynost.Properties; // Замени Ynost на имя твоего корневого неймспейса, если оно другое
 namespace Ynost.ViewModels
 {
-    public enum LoginResultRole
-    {
-        None,
-        Editor,
-        Viewer
-    }
-
+    public enum LoginResultRole { None, Editor, Viewer }
     public partial class LoginViewModel : ObservableObject
     {
         [ObservableProperty]
         private string? _username;
 
-        // Для пароля лучше использовать SecureString в реальных приложениях,
-        // но для простоты примера с MVVM и привязками оставим пока string.
-        // В WPF PasswordBox работает с SecureString.
         [ObservableProperty]
-        private string? _password; // В реальном PasswordBox лучше привязать к SecureString
+        private string? _password;
 
         [ObservableProperty]
         private string? _errorMessage;
+
+        [ObservableProperty]
+        private bool _rememberMe;
 
         public LoginResultRole AuthenticatedUserRole { get; private set; } = LoginResultRole.None;
         public bool LoginSuccessful { get; private set; } = false;
 
         public IRelayCommand LoginCommand { get; }
-        public Action? CloseAction { get; set; } // Для закрытия окна из ViewModel
+        public Action? CloseAction { get; set; }
 
         public LoginViewModel()
         {
             LoginCommand = new RelayCommand(AttemptLogin);
+            if (Settings.Default.RememberLastUser)
+            {
+                Username = Settings.Default.LastUsername;
+                // Password = Settings.Default.LastPassword; 
+                RememberMe = true; 
+            }
         }
 
         private void AttemptLogin()
@@ -42,9 +42,6 @@ namespace Ynost.ViewModels
             LoginSuccessful = false;
             AuthenticatedUserRole = LoginResultRole.None;
 
-            // Здесь должна быть реальная логика проверки логина и пароля.
-            // Пока что захардкодим для примера.
-            // Пароли в реальном приложении должны быть хешированы!
             if (Username == "admin" && Password == "admin")
             {
                 AuthenticatedUserRole = LoginResultRole.Editor;
@@ -61,7 +58,24 @@ namespace Ynost.ViewModels
                 return;
             }
 
-            CloseAction?.Invoke(); // Закрыть окно после успешного или неуспешного (с сообщением) логина
+            if (LoginSuccessful)
+            {
+                if (RememberMe)
+                {
+                    Settings.Default.LastUsername = Username;
+                    Settings.Default.LastPassword = Password; 
+                    Settings.Default.RememberLastUser = true;
+                }
+                else
+                {
+                    Settings.Default.LastUsername = string.Empty;
+                    Settings.Default.LastPassword = string.Empty;
+                    Settings.Default.RememberLastUser = false;
+                }
+                Settings.Default.Save(); 
+            }
+
+            CloseAction?.Invoke();
         }
     }
 }

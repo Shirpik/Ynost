@@ -1,5 +1,5 @@
 ﻿namespace Ynost.Models;
 public record ExperimentalProject(
-    string Name,
-    DateTime Date,
+    string? Name,
+    string? DateString, // Было DateTime Date
     string? Link);
