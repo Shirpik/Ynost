@@ -14,18 +14,13 @@
             <Setter Property="TextWrapping" Value="Wrap"/>
             <Setter Property="Margin" Value="4,2"/>
         </Style>
-
         <Style x:Key="EditingTextBoxStyle" TargetType="TextBox">
             <Setter Property="AcceptsReturn" Value="True"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
             <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
             <Setter Property="SpellCheck.IsEnabled" Value="True"/>
         </Style>
-
-        <!-- Стандартный конвертер -->
         <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
-
-        <!-- Твои кастомные конвертеры. Убедись, что неймспейс 'local:' правильно указывает на папку с ними -->
         <local:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
         <local:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVisConverter"/>
     </Window.Resources>
@@ -70,11 +65,14 @@
             <Grid Grid.Column="2">
                 <TextBlock Text="{Binding LoadingStatus}" FontSize="18" FontWeight="SemiBold"
                            HorizontalAlignment="Center" VerticalAlignment="Center"
-                           Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisConverter}}"
-                           d:Visibility="Collapsed"/>
+                           Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisConverter}}"/>
+
+                <TextBlock Text="Войдите в систему для показа данных" FontSize="18" FontWeight="SemiBold"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Visibility="{Binding ShowLoginPrompt, Converter={StaticResource BoolToVisConverter}}"/>
 
                 <ScrollViewer x:Name="DetailsScrollViewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
-                              Visibility="{Binding IsLoading, Converter={StaticResource InverseBoolToVisConverter}}">
+                              Visibility="{Binding ShowDataGrid, Converter={StaticResource BoolToVisConverter}}">
                     <StackPanel Margin="10" IsEnabled="{Binding CanEditData}">
 
                         <!-- 1. Итоговые результаты успеваемости (аттестат) -->
@@ -317,20 +315,52 @@
         </Grid>
 
         <Border Grid.Row="1" Background="#FFE0E0E0" Padding="5" BorderBrush="Gray" BorderThickness="0,1,0,0">
-            <Button Content="Сохранить" HorizontalAlignment="Right" Padding="10,3"
-                    Command="{Binding SaveChangesCommand}"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <Button Grid.Column="2" Content="Сохранить" HorizontalAlignment="Right" Padding="10,3"
+                        Command="{Binding SaveChangesCommand}"/>
+                <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left">
+                    <Button Content="{Binding LoginButtonText}" Padding="10,3"
+                            Command="{Binding ToggleLoginCommand}"/>
+                    <TextBlock Text="{Binding UserStatusText}" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="SemiBold"
+                               Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVisConverter}}"/>
+                </StackPanel>
+
+            </Grid>
         </Border>
 
+        <!-- Строка статуса -->
         <Border Grid.Row="2" Background="LightGray" BorderBrush="Gray" BorderThickness="0,1,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="{Binding ConnectionStatusText}" Padding="5" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="0" Text="{Binding ConnectionStatusText}" Padding="5" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                <!-- Кнопка "Повторить попытку" видна, если залогинен, но нет соединения с БД и не идет загрузка -->
                 <Button Grid.Column="1" Content="Повторить попытку" Margin="0,0,5,0" Padding="10,3" VerticalAlignment="Center"
-                        Command="{Binding RetryConnectionCommand}"
-                        Visibility="{Binding IsDatabaseConnected, Converter={StaticResource InverseBoolToVisConverter}}"/>
+                        Command="{Binding RetryConnectionCommand}">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding IsLoggedIn}" Value="True"/>
+                                        <Condition Binding="{Binding IsDatabaseConnected}" Value="False"/>
+                                        <Condition Binding="{Binding IsLoading}" Value="False"/>
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </MultiDataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
             </Grid>
         </Border>
     </Grid>
