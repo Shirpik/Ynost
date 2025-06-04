@@ -1,129 +1,155 @@
-﻿// MainViewModel.cs
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input; // Для IRelayCommand
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
-using Ynost.Models; // Убедись, что этот using есть
+using Ynost.Models;
 using Ynost.Services;
-using Ynost.ViewModels; // Добавь этот using для TeacherViewModel
+using Ynost.ViewModels;
 
 namespace Ynost.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {
         private readonly DatabaseService _db;
-        private bool _isInitialized = false;
 
-        // Свойства для состояния загрузки (оставляем твои)
         [ObservableProperty]
         private bool _isLoading;
         [ObservableProperty]
         private string _loadingStatus = "Инициализация...";
-        [ObservableProperty]
-        private bool _hasError;
-        [ObservableProperty]
-        private string _errorMessage = string.Empty;
 
-        // Коллекция теперь будет содержать TeacherViewModel
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(RetryConnectionCommand))] // Обновляем состояние кнопки
+        private bool _isDatabaseConnected;
+
+        [ObservableProperty]
+        private bool _isUsingCache;
+
+        [ObservableProperty]
+        private string _connectionStatusText = "Определение статуса...";
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(SaveChangesCommand))] // Обновляем состояние кнопки
+        private bool _canEditData;
+
         public ObservableCollection<TeacherViewModel> Teachers { get; } = new();
-
-        // Свойство для выбранного преподавателя (TeacherViewModel)
         [ObservableProperty]
         private TeacherViewModel? selectedTeacher;
+
+        public IRelayCommand RetryConnectionCommand { get; }
+        public IRelayCommand SaveChangesCommand { get; }
 
 
         public MainViewModel(DatabaseService db)
         {
             _db = db;
-            // InitializeCommand больше не нужен, так как загрузка идет из MainWindow.xaml.cs
-            // Если ты его используешь где-то еще, оставь. Для простоты пока уберу.
+            RetryConnectionCommand = new AsyncRelayCommand(LoadDataAsync, CanRetryConnection);
+            SaveChangesCommand = new RelayCommand(ExecuteSaveChanges, CanExecuteSaveChanges);
         }
 
-        // Убираем InitializeCommand и InitializeAsync, если MainWindow.xaml.cs управляет загрузкой
-        // Если ты его используешь, оставь, но убедись, что SelectedTeacher устанавливается.
-
-        public async Task LoadDataAsync(bool useCache = true)
+        private bool CanRetryConnection()
         {
-            IsLoading = true; // Установим IsLoading в начале
-            HasError = false;
-            ErrorMessage = string.Empty;
-            if (useCache && !_isInitialized)
+            return !IsDatabaseConnected && !IsLoading; // Можно повторить, если нет соединения и не идет загрузка
+        }
+
+        private void ExecuteSaveChanges()
+        {
+            // Пока пустышка
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                LoadingStatus = "Загрузка из кеша...";
-            }
-            else if (!useCache)
-            {
-                LoadingStatus = "Обновление данных с сервера...";
-            }
+                MessageBox.Show("Функция сохранения будет реализована позже.", "Сохранение", MessageBoxButton.OK, MessageBoxImage.Information);
+            });
+            Debug.WriteLine("[MainViewModel] SaveChangesCommand executed (placeholder).");
+            // В будущем здесь будет логика отправки изменений в DatabaseService.
+            // После попытки сохранения, нужно будет обновить IsDatabaseConnected, CanEditData, ConnectionStatusText
+            // в зависимости от результата операции сохранения.
+        }
+
+        private bool CanExecuteSaveChanges()
+        {
+            return CanEditData; // Можно сохранить, если разрешено редактирование
+        }
 
 
-            try
-            {
-                var teacherModels = await _db.GetAllTeachersAsync(useCache); // Получаем список Teacher
+        public async Task LoadDataAsync()
+        {
+            if (IsLoading && (RetryConnectionCommand as AsyncRelayCommand)?.IsRunning == true) return; // Предотвращаем многократный запуск, если уже идет попытка
 
-                // Обновляем коллекцию Teachers в UI потоке
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                {
-                    // Сохраняем текущий выбранный Id, если он есть
-                    int? previouslySelectedTeacherId = SelectedTeacher?.GetModelId();
+            IsLoading = true;
+            LoadingStatus = "Соединение с базой данных...";
+            ConnectionStatusText = "Попытка соединения с БД...";
+            IsDatabaseConnected = false;
+            IsUsingCache = false;
+            CanEditData = false;
+            // Обновляем состояние команд, т.к. IsLoading и IsDatabaseConnected изменились
+            ((AsyncRelayCommand)RetryConnectionCommand).NotifyCanExecuteChanged();
+            ((RelayCommand)SaveChangesCommand).NotifyCanExecuteChanged();
 
-                    Teachers.Clear();
-                    foreach (var model in teacherModels)
-                    {
-                        Teachers.Add(new TeacherViewModel(model)); // Оборачиваем в TeacherViewModel
-                    }
 
-                    // Попытка восстановить выбор
-                    if (previouslySelectedTeacherId.HasValue)
-                    {
-                        SelectedTeacher = Teachers.FirstOrDefault(tvm => tvm.GetModelId() == previouslySelectedTeacherId.Value);
-                    }
+            List<Teacher>? teacherModels = await _db.GetTeachersFromDbAsync();
 
-                    // Если после обновления выбранный элемент стал null (например, его удалили)
-                    // или если это первая загрузка, выбираем первого в списке.
-                    if (SelectedTeacher == null && Teachers.Count > 0)
-                    {
-                        SelectedTeacher = Teachers[0];
-                    }
-                });
-
-                if (!_isInitialized) _isInitialized = true;
-
-                // Фоновое обновление, если это была загрузка из кеша (твоя логика)
-                // Убедимся, что оно не вызывается рекурсивно, если isInitialized уже true
-                // и это был не первый вызов LoadDataAsync
-                if (useCache && _isInitialized) // Если грузили из кеша и уже инициализированы
-                {
-                    // Запускаем полное обновление, если это не оно само себя вызвало из фонового потока
-                    bool isThisTheBackgroundUpdateCall = !Application.Current.Dispatcher.CheckAccess();
-                    if (!isThisTheBackgroundUpdateCall) // Т.е. если это основной вызов LoadDataAsync(useCache:true)
-                    {
-                        _ = Task.Run(async () =>
-                        {
-                            await Task.Delay(2000); // Небольшая задержка перед фоновым обновлением
-                            await LoadDataAsync(useCache: false); // Полное обновление
-                        });
-                    }
-                }
-            }
-            catch (Exception ex)
+            if (teacherModels != null)
             {
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    ErrorMessage = $"Ошибка загрузки: {ex.Message}";
-                    HasError = true;
-                    LoadingStatus = "Ошибка загрузки";
+                    UpdateTeachersCollection(teacherModels);
+                    IsDatabaseConnected = true;
+                    IsUsingCache = false;
+                    CanEditData = true;
+                    ConnectionStatusText = $"Данные успешно загружены из БД. Записей: {Teachers.Count}.";
+                    LoadingStatus = ConnectionStatusText;
                 });
-                Debug.WriteLine($"Ошибка загрузки данных: {ex}");
-                // throw; // Не бросаем исключение дальше, чтобы UI не падал, ошибки отображаются
+                await _db.SaveTeachersToCacheAsync(teacherModels);
             }
-            finally
+            else
             {
-                IsLoading = false; // Сбрасываем IsLoading в конце
-                if (!HasError) LoadingStatus = $"Загружено: {Teachers.Count} преподавателей";
+                LoadingStatus = "Ошибка соединения с БД, загрузка из кеша...";
+                ConnectionStatusText = "Ошибка соединения с БД. Попытка загрузки из кеша...";
+
+                List<Teacher>? cachedModels = await _db.LoadTeachersFromCacheAsync();
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    if (cachedModels != null && cachedModels.Count > 0)
+                    {
+                        UpdateTeachersCollection(cachedModels);
+                        IsUsingCache = true;
+                        ConnectionStatusText = $"Отображаются данные из кеша (ошибка БД). Записей: {Teachers.Count}. Редактирование запрещено.";
+                    }
+                    else
+                    {
+                        Teachers.Clear();
+                        ConnectionStatusText = "Ошибка соединения с БД. Кеш пуст или недоступен. Данные не загружены.";
+                    }
+                    IsDatabaseConnected = false;
+                    CanEditData = false;
+                    LoadingStatus = ConnectionStatusText;
+                });
+            }
+
+            IsLoading = false;
+            // Обновляем состояние команд после завершения загрузки
+            ((AsyncRelayCommand)RetryConnectionCommand).NotifyCanExecuteChanged();
+            ((RelayCommand)SaveChangesCommand).NotifyCanExecuteChanged();
+        }
+
+        private void UpdateTeachersCollection(List<Teacher> newTeacherModels)
+        {
+            int? previouslySelectedTeacherId = SelectedTeacher?.GetModelId();
+            Teachers.Clear();
+            foreach (var model in newTeacherModels)
+            {
+                Teachers.Add(new TeacherViewModel(model));
+            }
+
+            if (previouslySelectedTeacherId.HasValue)
+            {
+                SelectedTeacher = Teachers.FirstOrDefault(tvm => tvm.GetModelId() == previouslySelectedTeacherId.Value);
+            }
+            if (SelectedTeacher == null && Teachers.Count > 0)
+            {
+                SelectedTeacher = Teachers[0];
             }
         }
     }

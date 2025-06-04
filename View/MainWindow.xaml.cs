@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 using Ynost.Services;
 using Ynost.ViewModels;
 
@@ -34,21 +35,14 @@ namespace Ynost
 
         private async void MainWindow_Loaded(object? sender, RoutedEventArgs e)
         {
-            // Флаг _isDataLoaded больше не нужен здесь, MainViewModel сам отслеживает инициализацию
-
             Log("=== Начало загрузки преподавателей (из MainWindow_Loaded) ===");
             var sw = Stopwatch.StartNew();
-
             try
             {
-                // MainViewModel теперь сам управляет первой загрузкой (из кеша, если есть)
-                // и последующим фоновым обновлением.
-                await _vm.LoadDataAsync(useCache: true);
+                await _vm.LoadDataAsync(); // Вызов без параметров
 
                 sw.Stop();
-                // Основное логирование и отображение статуса теперь внутри MainViewModel.
-                // Можно добавить лог здесь, если нужно отследить именно завершение вызова из MainWindow_Loaded.
-                Log($"Первичный вызов LoadDataAsync из MainWindow_Loaded завершен за {sw.ElapsedMilliseconds} ms. Статус ViewModel: {_vm.LoadingStatus}");
+                Log($"Операция загрузки в MainWindow_Loaded завершена за {sw.ElapsedMilliseconds} ms. Статус ViewModel: {_vm.ConnectionStatusText}");
             }
             catch (Exception ex)
             {
@@ -68,7 +62,6 @@ namespace Ynost
             }
         }
 
-        // Этот метод должен быть здесь, если он используется в XAML
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             // Убедись, что _vm.Teachers это ObservableCollection<TeacherViewModel>
@@ -118,13 +111,50 @@ namespace Ynost
             }
         }
 
-        // Этот метод может быть пустым или удален, если SelectedItem привязан в XAML
-        // и дополнительная логика в CodeBehind не нужна.
-        private void TeachersGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void EditingTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            // Если SelectedItem в TeachersGrid привязан к _vm.SelectedTeacher (Mode=TwoWay),
-            // то этот обработчик может быть не нужен для основной логики MVVM.
-            // Оставляем его, так как он был в твоем коде.
+            if (e.Key == Key.Enter)
+            {
+                var textBox = sender as TextBox;
+                if (textBox == null) return;
+
+                if ((Keyboard.Modifiers & ModifierKeys.Shift) != ModifierKeys.Shift)
+                {
+                    e.Handled = true;
+
+                    DependencyObject parent = VisualTreeHelper.GetParent(textBox);
+                    DataGrid grid = null;
+                    while (parent != null)
+                    {
+                        grid = parent as DataGrid;
+                        if (grid != null) break;
+                        parent = VisualTreeHelper.GetParent(parent);
+                    }
+
+                    if (grid != null)
+                    {
+                        grid.CommitEdit(DataGridEditingUnit.Row, true);
+                    }
+                }
+            }
+        }
+        // Вызывается, когда ячейка входит в режим редактирования
+        private void DataGrid_PreparingCellForEdit(object sender, DataGridPreparingCellForEditEventArgs e)
+        {
+            if (e.EditingElement is TextBox textBox)
+            {
+                textBox.PreviewKeyDown -= EditingTextBox_PreviewKeyDown;
+                textBox.PreviewKeyDown += EditingTextBox_PreviewKeyDown;
+            }
+        }
+
+        // Вызывается, когда редактирование ячейки завершается или отменяется
+        private void DataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            if (e.EditingElement is TextBox textBox)
+            {
+                textBox.PreviewKeyDown -= EditingTextBox_PreviewKeyDown;
+            }
         }
     }
 }
