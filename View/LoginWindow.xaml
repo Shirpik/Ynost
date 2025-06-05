@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:Ynost.ViewModels"
         mc:Ignorable="d"
-        Title="Авторизация" Height="230" Width="350" 
-    WindowStartupLocation="CenterOwner"
+        Title="Авторизация" Height="170" Width="350" 
+        WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize" ShowInTaskbar="False"
         FocusManager.FocusedElement="{Binding ElementName=UsernameTextBox}">
     <Window.DataContext>

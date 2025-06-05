@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.IO;
 using Dapper;
 using Newtonsoft.Json;
 using Npgsql;
@@ -33,7 +28,7 @@ namespace Ynost.Services
         {
             try
             {
-                using var conn = CreateConnection();
+                await using var conn = CreateConnection();
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(DatabaseTimeoutSeconds));
 
                 await conn.OpenAsync(cts.Token);
@@ -70,7 +65,7 @@ namespace Ynost.Services
         {
             try
             {
-                var json = JsonConvert.SerializeObject(teachers, Newtonsoft.Json.Formatting.Indented);
+                var json = JsonConvert.SerializeObject(teachers, Formatting.Indented);
                 await File.WriteAllTextAsync(_cachePath, json);
                 Console.WriteLine("[DB Service] Data saved to cache.");
             }

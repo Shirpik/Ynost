@@ -20,7 +20,7 @@ namespace Ynost.ViewModels
         private bool _rememberMe;
 
         public LoginResultRole AuthenticatedUserRole { get; private set; } = LoginResultRole.None;
-        public bool LoginSuccessful { get; private set; } = false;
+        public bool LoginSuccessful { get; private set; }
 
         public IRelayCommand LoginCommand { get; }
         public Action? CloseAction { get; set; }

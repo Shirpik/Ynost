@@ -1,5 +1,4 @@
 ﻿using Ynost.Models;
-using System;
 
 namespace Ynost.ViewModels
 {
@@ -9,11 +8,11 @@ namespace Ynost.ViewModels
         {
             var t = new Teacher { Id = 1, FullName = "Иванов Иван Иванович", IsLecturer = true };
 
-            t.AcademicResults.AddRange(new[] {
+            t.AcademicResults.AddRange([
                 new AcademicYearResult("МИ-8", "2023-2024","Математика","4.2","4.4","+0.2","73.5","95.0","0.95",null),
                 new AcademicYearResult("ПИ-3", "2022-2023","Математика","4.0","4.2","+0.2","71.0","94.0","0.94",null),
                 new AcademicYearResult("СУ-100", "2021-2022","Математика","3.8","4.0","+0.2","68.0","92.0","0.92",null)
-            });
+            ]);
 
             t.GiaResults.Add(new GiaResult("Математика", "11Б", "22", "10.0", "25.0", "55.0", "5.0", "5.0", "75.5", null));
             t.GiaResults.Add(new GiaResult("Математика", "9А", "28", "15.0", "30.0", "45.0", "10.0", "0.0", "4.15", null));

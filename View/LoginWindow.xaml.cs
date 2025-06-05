@@ -4,7 +4,7 @@ using Ynost.ViewModels;
 
 namespace Ynost.View
 {
-    public partial class LoginWindow : Window
+    public partial class LoginWindow
     {
         public LoginWindow()
         {

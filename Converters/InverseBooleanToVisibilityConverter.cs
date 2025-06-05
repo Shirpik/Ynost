@@ -1,15 +1,14 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
-
-namespace Ynost.Converters // Убедись, что неймспейс правильный
+namespace Ynost.Converters
 {
     public class InverseBooleanToVisibilityConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            bool boolValue = false;
+            var boolValue = false;
+
             if (value is bool)
             {
                 boolValue = (bool)value;
@@ -17,8 +16,8 @@ namespace Ynost.Converters // Убедись, что неймспейс прав
             // Инвертируем значение перед преобразованием в Visibility
             return !boolValue ? Visibility.Visible : Visibility.Collapsed;
         }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

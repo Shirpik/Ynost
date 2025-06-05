@@ -1,18 +1,16 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Media; // Для VisualTreeHelper
-using Ynost.Services;      // Убедись, что этот неймспейс существует и DatabaseService там
-using Ynost.ViewModels;  // Убедись, что этот неймспейс существует и MainViewModel там
+using System.Windows.Media; 
+using Ynost.Services;      
+using Ynost.ViewModels;  
 
-namespace Ynost
+namespace Ynost.View
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         private readonly MainViewModel _vm;
         private readonly string _logPath;
@@ -22,7 +20,7 @@ namespace Ynost
             InitializeComponent();
 
             // Строка подключения - вынесена для наглядности
-            var connectionString = "Host=91.192.168.52;Port=5432;Database=ynost_db;Username=teacher_app;Password=T_pass;Ssl Mode=Disable";
+            const string connectionString = "Host=91.192.168.52;Port=5432;Database=ynost_db;Username=teacher_app;Password=T_pass;Ssl Mode=Disable";
             var dbService = new DatabaseService(connectionString);
             _vm = new MainViewModel(dbService);
 
@@ -47,7 +45,7 @@ namespace Ynost
             catch (Exception ex)
             {
                 sw.Stop();
-                Log($"КРИТИЧЕСКАЯ ОШИБКА при вызове LoadDataAsync из MainWindow_Loaded: {ex.ToString()}"); // ToString() для полной информации об ошибке
+                Log($"КРИТИЧЕСКАЯ ОШИБКА при вызове LoadDataAsync из MainWindow_Loaded: {ex}"); // ToString() для полной информации об ошибке
                 MessageBox.Show(
                     $"Критическая ошибка при инициализации загрузки:\n{ex.Message}",
                     "Ynost — Ошибка",
@@ -62,8 +60,6 @@ namespace Ynost
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (_vm == null || _vm.Teachers == null) return;
-
             var view = CollectionViewSource.GetDefaultView(_vm.Teachers);
             if (view == null) return;
 
@@ -79,7 +75,6 @@ namespace Ynost
                     o is TeacherViewModel t &&
                     t.FullName.Contains(q, StringComparison.OrdinalIgnoreCase);
             }
-
             Log($"Фильтр применён: \"{q}\" (осталось {view.Cast<object>().Count()} записей)");
         }
 
@@ -117,8 +112,8 @@ namespace Ynost
                 {
                     e.Handled = true;
 
-                    DependencyObject parent = VisualTreeHelper.GetParent(textBox);
-                    DataGrid grid = null;
+                    DependencyObject? parent = VisualTreeHelper.GetParent(textBox);
+                    DataGrid? grid = null;
                     while (parent != null)
                     {
                         grid = parent as DataGrid;

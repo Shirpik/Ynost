@@ -1,13 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Threading.Tasks;
 using System.Windows;
 using Ynost.Models;
 using Ynost.Services;
-using Ynost.ViewModels;
 using Ynost.View;
 using Ynost.Properties;
 
@@ -246,7 +242,7 @@ namespace Ynost.ViewModels
             OnPropertyChanged(nameof(ShowDataGrid));
         }
 
-        private void UpdateTeachersCollection(List<Teacher> newTeacherModels)
+        private void UpdateTeachersCollection(List<Teacher>? newTeacherModels)
         {
             int? previouslySelectedTeacherId = SelectedTeacher?.GetModelId();
             Teachers.Clear();
