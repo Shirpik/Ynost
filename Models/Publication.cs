@@ -1,6 +1,6 @@
 ﻿namespace Ynost.Models;
 public record Publication(
-    string Level,
-    string Title,
-    DateTime Date,
+    string? Level,
+    string? Title,
+    string? DateString, // Было DateTime Date
     string? Link);

@@ -15,7 +15,7 @@ namespace Ynost.Services
     {
         private readonly string _connectionString;
         private readonly string _cachePath;
-        private const int DatabaseTimeoutSeconds = 5;
+        private const int DatabaseTimeoutSeconds = 10;
 
         public DatabaseService(string connectionString)
         {

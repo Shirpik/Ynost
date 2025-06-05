@@ -47,7 +47,10 @@ namespace Ynost.ViewModels
         [RelayCommand]
         private void AddAcademicResult()
         {
-            var newItem = new AcademicYearResult(DateTime.Now.Year, "Новый предмет", null, null, null, null, null, null, null);
+            // Примерный формат для нового учебного года
+            string currentYear = DateTime.Now.Year.ToString();
+            string nextYear = (DateTime.Now.Year + 1).ToString();
+            var newItem = new AcademicYearResult("Группа", $"{currentYear}-{nextYear}", "Новый предмет", null, null, null, null, null, null, null);
             AcademicResults.Add(newItem);
         }
         [RelayCommand(CanExecute = nameof(CanDeleteAcademicResult))]
@@ -70,7 +73,7 @@ namespace Ynost.ViewModels
         [RelayCommand]
         private void AddGiaResult()
         {
-            var newItem = new GiaResult("Предмет ГИА", "Класс", null, null, null, null, null, null, null, null);
+            var newItem = new GiaResult("Предмет ГИА", "Группа", null, null, null, null, null, null, null, null);
             GiaResults.Add(newItem);
         }
         [RelayCommand(CanExecute = nameof(CanDeleteGiaResult))]
@@ -116,8 +119,7 @@ namespace Ynost.ViewModels
         [RelayCommand]
         private void AddIndependentAssessment()
         {
-            // AssessmentName, AssessmentDate, ClassSubject, StudentsTotal, StudentsParticipated, StudentsPassed, PerformanceRate, LearningQualityRate, SouRate, Link
-            var newItem = new IndependentAssessment("Вид оценки", DateTime.Now, "Класс/Предмет", null, null, null, null, null, null, null);
+            var newItem = new IndependentAssessment("Вид оценки", DateTime.Now.ToString("dd.MM.yyyy"), "Класс/Предмет", null, null, null, null, null, null, null);
             IndependentAssessments.Add(newItem);
         }
         [RelayCommand(CanExecute = nameof(CanDeleteIndependentAssessment))]
@@ -186,7 +188,7 @@ namespace Ynost.ViewModels
         [RelayCommand]
         private void AddJuryActivity()
         {
-            var newItem = new JuryActivity("Уровень", "Событие", DateTime.Now, null);
+            var newItem = new JuryActivity("Уровень", "Событие", DateTime.Now.ToString("dd.MM.yyyy"), null);
             JuryActivities.Add(newItem);
         }
         [RelayCommand(CanExecute = nameof(CanDeleteJuryActivity))]
@@ -209,7 +211,7 @@ namespace Ynost.ViewModels
         [RelayCommand]
         private void AddMasterClass()
         {
-            var newItem = new MasterClass("Уровень", "Тема", DateTime.Now, null);
+            var newItem = new MasterClass("Уровень", "Тема", DateTime.Now.ToString("dd.MM.yyyy"), null);
             MasterClasses.Add(newItem);
         }
         [RelayCommand(CanExecute = nameof(CanDeleteMasterClass))]
@@ -232,7 +234,7 @@ namespace Ynost.ViewModels
         [RelayCommand]
         private void AddSpeech()
         {
-            var newItem = new Speech("Уровень", "Тема", DateTime.Now, null);
+            var newItem = new Speech("Уровень", "Тема", DateTime.Now.ToString("dd.MM.yyyy"), null);
             Speeches.Add(newItem);
         }
         [RelayCommand(CanExecute = nameof(CanDeleteSpeech))]
@@ -255,7 +257,7 @@ namespace Ynost.ViewModels
         [RelayCommand]
         private void AddPublication()
         {
-            var newItem = new Publication("Уровень", "Название", DateTime.Now, null);
+            var newItem = new Publication("Уровень", "Название", DateTime.Now.ToString("dd.MM.yyyy"), null);
             Publications.Add(newItem);
         }
         [RelayCommand(CanExecute = nameof(CanDeletePublication))]
@@ -278,7 +280,7 @@ namespace Ynost.ViewModels
         [RelayCommand]
         private void AddExperimentalProject()
         {
-            var newItem = new ExperimentalProject("Название проекта", DateTime.Now, null);
+            var newItem = new ExperimentalProject("Название проекта", DateTime.Now.ToString("dd.MM.yyyy"), null);
             ExperimentalProjects.Add(newItem);
         }
         [RelayCommand(CanExecute = nameof(CanDeleteExperimentalProject))]
@@ -301,7 +303,7 @@ namespace Ynost.ViewModels
         [RelayCommand]
         private void AddMentorship()
         {
-            var newItem = new Mentorship("Наставляемый", "Приказ", DateTime.Now, null);
+            var newItem = new Mentorship("Наставляемый", "Приказ", DateTime.Now.ToString("dd.MM.yyyy"), null);
             Mentorships.Add(newItem);
         }
         [RelayCommand(CanExecute = nameof(CanDeleteMentorship))]
@@ -347,7 +349,7 @@ namespace Ynost.ViewModels
         [RelayCommand]
         private void AddProfessionalCompetition()
         {
-            var newItem = new ProfessionalCompetition("Уровень", "Конкурс", "Достижение", DateTime.Now, null);
+            var newItem = new ProfessionalCompetition("Уровень", "Конкурс", "Достижение", DateTime.Now.ToString("dd.MM.yyyy"), null);
             ProfessionalCompetitions.Add(newItem);
         }
         [RelayCommand(CanExecute = nameof(CanDeleteProfessionalCompetition))]
