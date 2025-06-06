@@ -1,13 +1,19 @@
-﻿namespace Ynost.Models;
+﻿using System;
 
-public record IndependentAssessment(
-    string? AssessmentName,
-    string? AssessmentDateString,   // Было DateTime? Date, формат "dd.MM.yyyy"
-    string? ClassSubject,
-    string? StudentsTotal,         // Было int?
-    string? StudentsParticipated,
-    string? StudentsPassed,
-    string? PerformanceRate,
-    string? LearningQualityRate,
-    string? SouRate,
-    string? Link);
+namespace Ynost.Models;
+
+public class IndependentAssessment
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid TeacherId { get; set; }        // ← добавить
+    public string AssessmentName { get; set; } = string.Empty;
+    public string AssessmentDate { get; set; } = string.Empty;   // храните как текст
+    public string ClassSubject { get; set; } = string.Empty;
+    public string StudentsTotal { get; set; } = string.Empty;
+    public string StudentsParticipated { get; set; } = string.Empty;
+    public string StudentsPassed { get; set; } = string.Empty;
+    public string PerformanceRate { get; set; } = string.Empty;
+    public string LearningQualityRate { get; set; } = string.Empty;
+    public string SouRate { get; set; } = string.Empty;
+    public string Link { get; set; } = string.Empty;
+}

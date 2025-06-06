@@ -1,72 +1,328 @@
-﻿using Ynost.Models;
-using System;
+﻿using System;
+using Ynost.Models;
 
 namespace Ynost.ViewModels
 {
     internal static class DemoTeacherFactory
     {
+        // -------------------- Иванов ----------------------------------------
         public static TeacherViewModel BuildIvanov()
         {
-            var t = new Teacher { Id = 1, FullName = "Иванов Иван Иванович", IsLecturer = true };
+            var t = new Teacher
+            {
+                Id = Guid.NewGuid(),
+                FullName = "Иванов Иван Иванович",
+                IsLecturer = true
+            };
 
-            t.AcademicResults.AddRange(new[] {
-                new AcademicYearResult("МИ-8", "2023-2024","Математика","4.2","4.4","+0.2","73.5","95.0","0.95",null),
-                new AcademicYearResult("ПИ-3", "2022-2023","Математика","4.0","4.2","+0.2","71.0","94.0","0.94",null),
-                new AcademicYearResult("СУ-100", "2021-2022","Математика","3.8","4.0","+0.2","68.0","92.0","0.92",null)
+            // 1. Академ. результаты
+            t.AcademicResults.AddRange(new[]
+            {
+                new AcademicYearResult
+                {
+                    Group            = "МИ-8",
+                    AcademicPeriod   = "2023-2024",
+                    Subject          = "Математика",
+                    AvgSem1          = "4.2",
+                    AvgSem2          = "4.4",
+                    Dynamics         = "+0.2",
+                    AvgSuccessRate   = "73.5",
+                    AvgQualityRate   = "95.0",
+                    SouRate          = "0.95"
+                },
+                new AcademicYearResult
+                {
+                    Group          = "ПИ-3",
+                    AcademicPeriod = "2022-2023",
+                    Subject        = "Математика",
+                    AvgSem1        = "4.0",
+                    AvgSem2        = "4.2",
+                    Dynamics       = "+0.2",
+                    AvgSuccessRate = "71.0",
+                    AvgQualityRate = "94.0",
+                    SouRate        = "0.94"
+                },
+                new AcademicYearResult
+                {
+                    Group          = "СУ-100",
+                    AcademicPeriod = "2021-2022",
+                    Subject        = "Математика",
+                    AvgSem1        = "3.8",
+                    AvgSem2        = "4.0",
+                    Dynamics       = "+0.2",
+                    AvgSuccessRate = "68.0",
+                    AvgQualityRate = "92.0",
+                    SouRate        = "0.92"
+                }
             });
 
-            t.GiaResults.Add(new GiaResult("Математика", "11Б", "22", "10.0", "25.0", "55.0", "5.0", "5.0", "75.5", null));
-            t.GiaResults.Add(new GiaResult("Математика", "9А", "28", "15.0", "30.0", "45.0", "10.0", "0.0", "4.15", null));
+            // 2. ГИА
+            t.GiaResults.Add(new GiaResult
+            {
+                Subject = "Математика",
+                Group = "11Б",
+                TotalParticipants = "22",
+                PctMark5 = "10.0",
+                PctMark4 = "25.0",
+                PctMark3 = "55.0",
+                PctFail = "5.0",
+                AvgScore = "75.5"
+            });
+            t.GiaResults.Add(new GiaResult
+            {
+                Subject = "Математика",
+                Group = "9А",
+                TotalParticipants = "28",
+                PctMark5 = "15.0",
+                PctMark4 = "30.0",
+                PctMark3 = "45.0",
+                PctFail = "10.0",
+                AvgScore = "71.0"
+            });
 
-            t.DemoExamResults.Add(new DemoExamResult("Сетевое и системное администрирование", "ИС-41", "20", "25.0", "50.0", "20.0", "5.0", "4.5", null));
+            // 3. ДЭ
+            t.DemoExamResults.Add(new DemoExamResult
+            {
+                Subject = "Сетевое и системное администрирование",
+                Group = "ИС-41",
+                TotalParticipants = "20",
+                PctMark5 = "25.0",
+                PctMark4 = "50.0",
+                PctMark3 = "20.0",
+                PctMark2 = "5.0",
+                AvgScore = "4.5"
+            });
 
-            t.IndependentAssessments.Add(new IndependentAssessment(
-                "ВПР", new DateTime(2024, 4, 10).ToString("dd.MM.yyyy"), "7А/Математика",
-                "27", "27", "24",
-                "88.8", "90.0", "0.9",
-                null));
+            // 4. НОКО
+            t.IndependentAssessments.Add(new IndependentAssessment
+            {
+                AssessmentName = "ВПР",
+                AssessmentDate = "10.04.2024",
+                ClassSubject = "7А/Математика",
+                StudentsTotal = "27",
+                StudentsParticipated = "27",
+                StudentsPassed = "24",
+                PerformanceRate = "88.8",
+                LearningQualityRate = "90.0",
+                SouRate = "0.9"
+            });
 
-            t.SelfDeterminations.Add(new SelfDeterminationActivity("муниципальный", "День профессий", "координатор", null));
-            t.StudentOlympiads.Add(new StudentOlympiad("региональный", "Кенгуру", "очно", "Петрова А.А.", "призёр", null));
-            t.JuryActivities.Add(new JuryActivity("региональный", "Олимпиада школьников", new DateTime(2023, 12, 1).ToString("dd.MM.yyyy"), null));
-            t.MasterClasses.Add(new MasterClass("школьный", "GeoGebra на уроке", new DateTime(2024, 2, 18).ToString("dd.MM.yyyy"), null));
-            t.Speeches.Add(new Speech("вуз", "Методика решения задач", new DateTime(2023, 10, 5).ToString("dd.MM.yyyy"), null));
-            t.Publications.Add(new Publication("региональный", "Игровые технологии", new DateTime(2022, 6, 1).ToString("dd.MM.yyyy"), null));
-            t.ExperimentalProjects.Add(new ExperimentalProject("Гибридное обучение", new DateTime(2024, 1, 20).ToString("dd.MM.yyyy"), null));
-            t.Mentorships.Add(new Mentorship("Сидоров С.С.", "№15-н", new DateTime(2023, 9, 10).ToString("dd.MM.yyyy"), null));
-            t.ProgramSupports.Add(new ProgramMethodSupport("Алгебра 7–9", true, null));
-            t.ProfessionalCompetitions.Add(new ProfessionalCompetition("федеральный", "Учитель года", "участник", new DateTime(2023, 5, 15).ToString("dd.MM.yyyy"), null));
+            // 5–14. Прочие разделы (объект-инициализаторы)
+            t.SelfDeterminations.Add(new SelfDeterminationActivity
+            {
+                Level = "муниципальный",
+                Name = "День профессий",
+                Role = "координатор"
+            });
+
+            t.StudentOlympiads.Add(new StudentOlympiad
+            {
+                Level = "региональный",
+                Name = "Кенгуру",
+                Form = "очно",
+                Cadet = "Петрова А.А.",
+                Result = "призёр"
+            });
+
+            t.JuryActivities.Add(new JuryActivity
+            {
+                Level = "региональный",
+                Name = "Олимпиада школьников",
+                EventDate = "01.12.2023"
+            });
+
+            t.MasterClasses.Add(new MasterClass
+            {
+                Level = "школьный",
+                Name = "GeoGebra на уроке",
+                EventDate = "18.02.2024"
+            });
+
+            t.Speeches.Add(new Speech
+            {
+                Level = "вуз",
+                Name = "Методика решения задач",
+                EventDate = "05.10.2023"
+            });
+
+            t.Publications.Add(new Publication
+            {
+                Level = "региональный",
+                Title = "Игровые технологии",
+                Date = "01.06.2022"
+            });
+
+            t.ExperimentalProjects.Add(new ExperimentalProject
+            {
+                Name = "Гибридное обучение",
+                Date = "20.01.2024"
+            });
+
+            t.Mentorships.Add(new Mentorship
+            {
+                Trainee = "Сидоров С.С.",
+                OrderNo = "№15-н",
+                OrderDate = "10.09.2023"
+            });
+
+            t.ProgramSupports.Add(new ProgramMethodSupport
+            {
+                ProgramName = "Алгебра 7–9",
+                HasControlMaterials = true
+            });
+
+            t.ProfessionalCompetitions.Add(new ProfessionalCompetition
+            {
+                Level = "федеральный",
+                Name = "Учитель года",
+                Achievement = "участник",
+                EventDate = "15.05.2023"
+            });
 
             return new TeacherViewModel(t);
         }
 
+        // -------------------- Петров ----------------------------------------
         public static TeacherViewModel BuildPetrov()
         {
-            var p = new Teacher { Id = 2, FullName = "Петров Пётр Петрович", IsLecturer = false };
+            var p = new Teacher
+            {
+                Id = Guid.NewGuid(),
+                FullName = "Петров Пётр Петрович",
+                IsLecturer = false
+            };
 
-            p.AcademicResults.Add(new AcademicYearResult("ДИ-20", "2023-2024", "Физика", "4.0", "4.5", "+0.5", "78.0", "97.0", "0.97", null));
+            p.AcademicResults.Add(new AcademicYearResult
+            {
+                Group = "ДИ-20",
+                AcademicPeriod = "2023-2024",
+                Subject = "Физика",
+                AvgSem1 = "4.0",
+                AvgSem2 = "4.5",
+                Dynamics = "+0.5",
+                AvgSuccessRate = "78.0",
+                AvgQualityRate = "97.0",
+                SouRate = "0.97"
+            });
 
-            p.GiaResults.Add(new GiaResult("Физика", "11А", "18", "12.5", "50.0", "35.0", "2.5", "2.5", "70.0", null));
-            p.GiaResults.Add(new GiaResult("Физика", "9Б", "25", "20.0", "40.0", "30.0", "10.0", "0.0", "4.1", null));
+            p.GiaResults.Add(new GiaResult
+            {
+                Subject = "Физика",
+                Group = "11А",
+                TotalParticipants = "18",
+                PctMark5 = "12.5",
+                PctMark4 = "50.0",
+                PctMark3 = "35.0",
+                PctFail = "2.5",
+                AvgScore = "70.0"
+            });
+            p.GiaResults.Add(new GiaResult
+            {
+                Subject = "Физика",
+                Group = "9Б",
+                TotalParticipants = "25",
+                PctMark5 = "20.0",
+                PctMark4 = "40.0",
+                PctMark3 = "30.0",
+                PctFail = "10.0",
+                AvgScore = "68.0"
+            });
 
-            p.DemoExamResults.Add(new DemoExamResult("Ремонт и обслуживание легковых автомобилей", "ТО-31", "15", "20.0", "60.0", "15.0", "5.0", "4.2", null));
+            p.DemoExamResults.Add(new DemoExamResult
+            {
+                Subject = "Ремонт и обслуживание легковых автомобилей",
+                Group = "ТО-31",
+                TotalParticipants = "15",
+                PctMark5 = "20.0",
+                PctMark4 = "60.0",
+                PctMark3 = "15.0",
+                PctMark2 = "5.0",
+                AvgScore = "4.2"
+            });
 
-            p.IndependentAssessments.Add(new IndependentAssessment(
-                "НИКО", new DateTime(2024, 4, 15).ToString("dd.MM.yyyy"), "8Б/Физика",
-                "26", "26", "22",
-                "84.6", "85.0", "0.85",
-                null));
+            p.IndependentAssessments.Add(new IndependentAssessment
+            {
+                AssessmentName = "НИКО",
+                AssessmentDate = "15.04.2024",
+                ClassSubject = "8Б/Физика",
+                StudentsTotal = "26",
+                StudentsParticipated = "26",
+                StudentsPassed = "22",
+                PerformanceRate = "84.6",
+                LearningQualityRate = "85.0",
+                SouRate = "0.85"
+            });
 
-            p.SelfDeterminations.Add(new SelfDeterminationActivity("региональный", "Форум профессий", "организатор", null));
-            p.StudentOlympiads.Add(new StudentOlympiad("всероссийский", "Шаг в науку", "дист.", "Сидоров С.С.", "лауреат", null));
-            p.JuryActivities.Add(new JuryActivity("муниципальный", "Конкурс роботов", new DateTime(2023, 11, 10).ToString("dd.MM.yyyy"), null));
-            p.MasterClasses.Add(new MasterClass("муниципальный", "STEM-урок", new DateTime(2024, 2, 20).ToString("dd.MM.yyyy"), null));
-            p.Speeches.Add(new Speech("региональный", "STEAM-круглый стол", new DateTime(2024, 3, 5).ToString("dd.MM.yyyy"), null));
-            p.Publications.Add(new Publication("региональный", "Arduino на уроках", new DateTime(2022, 10, 1).ToString("dd.MM.yyyy"), null));
-            p.ExperimentalProjects.Add(new ExperimentalProject("VR-лаборатория", new DateTime(2024, 1, 15).ToString("dd.MM.yyyy"), null));
-            p.Mentorships.Add(new Mentorship("Кузнецов К.К.", "№12-к", new DateTime(2023, 9, 12).ToString("dd.MM.yyyy"), null));
-            p.ProgramSupports.Add(new ProgramMethodSupport("Физика 10–11", true, null));
-            p.ProfessionalCompetitions.Add(new ProfessionalCompetition("региональный", "Учитель года", "финалист", new DateTime(2022, 5, 20).ToString("dd.MM.yyyy"), null));
+            p.SelfDeterminations.Add(new SelfDeterminationActivity
+            {
+                Level = "региональный",
+                Name = "Форум профессий",
+                Role = "организатор"
+            });
+
+            p.StudentOlympiads.Add(new StudentOlympiad
+            {
+                Level = "всероссийский",
+                Name = "Шаг в науку",
+                Form = "дист.",
+                Cadet = "Сидоров С.С.",
+                Result = "лауреат"
+            });
+
+            p.JuryActivities.Add(new JuryActivity
+            {
+                Level = "муниципальный",
+                Name = "Конкурс роботов",
+                EventDate = "10.11.2023"
+            });
+
+            p.MasterClasses.Add(new MasterClass
+            {
+                Level = "муниципальный",
+                Name = "STEM-урок",
+                EventDate = "20.02.2024"
+            });
+
+            p.Speeches.Add(new Speech
+            {
+                Level = "региональный",
+                Name = "STEAM-круглый стол",
+                EventDate = "05.03.2024"
+            });
+
+            p.Publications.Add(new Publication
+            {
+                Level = "региональный",
+                Title = "Arduino на уроках",
+                Date = "01.10.2022"
+            });
+
+            p.ExperimentalProjects.Add(new ExperimentalProject
+            {
+                Name = "VR-лаборатория",
+                Date = "15.01.2024"
+            });
+
+            p.Mentorships.Add(new Mentorship
+            {
+                Trainee = "Кузнецов К.К.",
+                OrderNo = "№12-к",
+                OrderDate = "12.09.2023"
+            });
+
+            p.ProgramSupports.Add(new ProgramMethodSupport
+            {
+                ProgramName = "Физика 10–11",
+                HasControlMaterials = true
+            });
+
+            p.ProfessionalCompetitions.Add(new ProfessionalCompetition
+            {
+                Level = "региональный",
+                Name = "Учитель года",
+                Achievement = "финалист",
+                EventDate = "20.05.2022"
+            });
 
             return new TeacherViewModel(p);
         }

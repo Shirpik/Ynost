@@ -1,13 +1,18 @@
-﻿namespace Ynost.Models;
+﻿using System;
 
-public record GiaResult(
-    string? Subject,
-    string? Group,
-    string? TotalParticipants, // Было int?
-    string? PctMark5,          // Было double?
-    string? PctMark4,
-    string? PctMark3,
-    string? PctMark2,
-    string? PctFail,
-    string? AvgScore,
-    string? Link);
+namespace Ynost.Models;
+
+public class GiaResult
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid TeacherId { get; set; }        // ← добавить
+    public string Subject { get; set; } = string.Empty;
+    public string Group { get; set; } = string.Empty;
+    public string TotalParticipants { get; set; } = string.Empty;
+    public string PctMark5 { get; set; } = string.Empty;
+    public string PctMark4 { get; set; } = string.Empty;
+    public string PctMark3 { get; set; } = string.Empty;
+    public string PctFail { get; set; } = string.Empty;
+    public string AvgScore { get; set; } = string.Empty;
+    public string Link { get; set; } = string.Empty;
+}

@@ -1,14 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Media; // Для VisualTreeHelper
-using Ynost.Services;      // Убедись, что этот неймспейс существует и DatabaseService там
-using Ynost.ViewModels;  // Убедись, что этот неймспейс существует и MainViewModel там
+using System.Windows.Media;
+using System.Windows.Threading;
+using Ynost.ViewModels;
 
 namespace Ynost
 {
@@ -16,22 +18,52 @@ namespace Ynost
     {
         private readonly MainViewModel _vm;
         private readonly string _logPath;
+        private readonly object _logLock = new();   // защита от одновременной записи
 
         public MainWindow()
         {
             InitializeComponent();
 
-            // Строка подключения - вынесена для наглядности
-            var connectionString = "Host=91.192.168.52;Port=5432;Database=ynost_db;Username=teacher_app;Password=T_pass;Ssl Mode=Disable";
-            var dbService = new DatabaseService(connectionString);
-            _vm = new MainViewModel(dbService);
-
-            DataContext = _vm;
-            Loaded += MainWindow_Loaded;
-
             _logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ynost.log");
+
+            // глобальные перехватчики необработанных исключений
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            Application.Current.DispatcherUnhandledException += Dispatcher_UnhandledException;
+            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+
+            // View‑model
+            _vm = new MainViewModel();   // ← без параметров; берёт App.Db
+            _vm.PropertyChanged += Vm_PropertyChanged; // пример: если нужно отслеживать ошибки внутри VM
+            DataContext = _vm;
+
+            // события окна
+            Loaded += MainWindow_Loaded;
         }
 
+        // ------------------------------------------------------------------
+        #region Глобальные обработчики ошибок
+        private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Log($"UNHANDLED AppDomain EXCEPTION: {e.ExceptionObject}", true);
+        }
+
+        private void Dispatcher_UnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        {
+            Log($"UNHANDLED Dispatcher EXCEPTION: {e.Exception}", true);
+            e.Handled = true; // чтобы приложение не падало мгновенно
+            MessageBox.Show("Возникла необработанная ошибка в UI. Подробности записаны в журнал.",
+                            "Ynost — Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        private void TaskScheduler_UnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+        {
+            Log($"UNHANDLED TaskScheduler EXCEPTION: {e.Exception}", true);
+            e.SetObserved();
+        }
+        #endregion
+
+        // ------------------------------------------------------------------
+        #region Жизненный цикл окна
         private async void MainWindow_Loaded(object? sender, RoutedEventArgs e)
         {
             Log("=== Начало загрузки данных при старте окна (MainWindow_Loaded) ===");
@@ -47,95 +79,110 @@ namespace Ynost
             catch (Exception ex)
             {
                 sw.Stop();
-                Log($"КРИТИЧЕСКАЯ ОШИБКА при вызове LoadDataAsync из MainWindow_Loaded: {ex.ToString()}"); // ToString() для полной информации об ошибке
-                MessageBox.Show(
-                    $"Критическая ошибка при инициализации загрузки:\n{ex.Message}",
-                    "Ynost — Ошибка",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                Log($"КРИТИЧЕСКАЯ ОШИБКА при вызове LoadDataAsync из MainWindow_Loaded: {ex}", true);
+                MessageBox.Show($"Критическая ошибка при инициализации загрузки:\n{ex.Message}",
+                                "Ynost — Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
                 Log("=== Окончание обработки MainWindow_Loaded ===\n");
             }
         }
+        #endregion
 
+        // ------------------------------------------------------------------
+        #region Поиск / фильтр
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (_vm == null || _vm.Teachers == null) return;
-
-            var view = CollectionViewSource.GetDefaultView(_vm.Teachers);
-            if (view == null) return;
-
-            string q = SearchBox.Text.Trim();
-
-            if (string.IsNullOrWhiteSpace(q))
-            {
-                view.Filter = null;
-            }
-            else
-            {
-                view.Filter = o =>
-                    o is TeacherViewModel t &&
-                    t.FullName.Contains(q, StringComparison.OrdinalIgnoreCase);
-            }
-
-            Log($"Фильтр применён: \"{q}\" (осталось {view.Cast<object>().Count()} записей)");
-        }
-
-        private void Log(string message)
         {
             try
             {
-                File.AppendAllText(_logPath,
-                    $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} {message}{Environment.NewLine}");
-            }
-            catch { /* Подавление ошибок логирования */ }
-        }
+                if (_vm?.Teachers == null) return;
+                var view = CollectionViewSource.GetDefaultView(_vm.Teachers);
+                if (view == null) return;
 
+                string q = SearchBox.Text.Trim();
+                if (string.IsNullOrWhiteSpace(q))
+                {
+                    view.Filter = null;
+                }
+                else
+                {
+                    view.Filter = o => o is TeacherViewModel t &&
+                                        t.FullName.Contains(q, StringComparison.OrdinalIgnoreCase);
+                }
+                Log($"Фильтр применён: \"{q}\" (осталось {view.Cast<object>().Count()} записей)");
+            }
+            catch (Exception ex)
+            {
+                Log($"Ошибка в SearchBox_TextChanged: {ex}", true);
+            }
+        }
+        #endregion
+
+        // ------------------------------------------------------------------
+        #region Вспомогательные методы
+        private void Log(string message, bool isError = false)
+        {
+            try
+            {
+                lock (_logLock)
+                {
+                    File.AppendAllText(_logPath,
+                        $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} {(isError ? "[ERR] " : string.Empty)}{message}{Environment.NewLine}");
+                }
+            }
+            catch
+            {
+                // Подавляем ошибки логирования, чтобы не зациклить крэш
+            }
+        }
+        #endregion
+
+        // ------------------------------------------------------------------
+        #region Обработчики прокрутки и редактирования DataGrid
         private void DataGrid_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if (!e.Handled && sender is UIElement)
+            try
             {
-                if (DetailsScrollViewer != null)
+                if (!e.Handled && sender is UIElement && DetailsScrollViewer != null)
                 {
                     DetailsScrollViewer.ScrollToVerticalOffset(DetailsScrollViewer.VerticalOffset - e.Delta);
                     e.Handled = true;
                 }
             }
+            catch (Exception ex)
+            {
+                Log($"Ошибка в DataGrid_PreviewMouseWheel: {ex}", true);
+            }
         }
 
-        // Обработчик для Enter/Shift+Enter в редактируемых ячейках
         private void EditingTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter)
+            try
             {
-                var textBox = sender as TextBox;
-                if (textBox == null) return;
+                if (e.Key != Key.Enter) return;
+                if (sender is not TextBox textBox) return;
 
                 if ((Keyboard.Modifiers & ModifierKeys.Shift) != ModifierKeys.Shift)
                 {
                     e.Handled = true;
 
                     DependencyObject parent = VisualTreeHelper.GetParent(textBox);
-                    DataGrid grid = null;
-                    while (parent != null)
+                    DataGrid? grid = null;
+                    while (parent != null && grid == null)
                     {
                         grid = parent as DataGrid;
-                        if (grid != null) break;
                         parent = VisualTreeHelper.GetParent(parent);
                     }
-
-                    if (grid != null)
-                    {
-                        grid.CommitEdit(DataGridEditingUnit.Row, true);
-                    }
+                    grid?.CommitEdit(DataGridEditingUnit.Row, true);
                 }
-                // Если нажат Shift+Enter, TextBox с AcceptsReturn=True обработает это как новую строку
+            }
+            catch (Exception ex)
+            {
+                Log($"Ошибка в EditingTextBox_PreviewKeyDown: {ex}", true);
             }
         }
 
-        // Подписка на PreviewKeyDown для TextBox при входе в режим редактирования
         private void DataGrid_PreparingCellForEdit(object sender, DataGridPreparingCellForEditEventArgs e)
         {
             if (e.EditingElement is TextBox textBox)
@@ -145,7 +192,6 @@ namespace Ynost
             }
         }
 
-        // Отписка от PreviewKeyDown при завершении редактирования
         private void DataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
             if (e.EditingElement is TextBox textBox)
@@ -153,5 +199,35 @@ namespace Ynost
                 textBox.PreviewKeyDown -= EditingTextBox_PreviewKeyDown;
             }
         }
+        #endregion
+
+        // ------------------------------------------------------------------
+        #region Прочие заглушки (оставлены пустыми, но с try/catch для логов)
+        private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try { /* реализация при необходимости */ }
+            catch (Exception ex) { Log($"Ошибка в DataGrid_SelectionChanged: {ex}", true); }
+        }
+
+        private void DataGrid_SelectionChanged_1(object sender, SelectionChangedEventArgs e)
+        {
+            try { /* реализация при необходимости */ }
+            catch (Exception ex) { Log($"Ошибка в DataGrid_SelectionChanged_1: {ex}", true); }
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            try { /* реализация при необходимости */ }
+            catch (Exception ex) { Log($"Ошибка в Button_Click: {ex}", true); }
+        }
+        #endregion
+
+        // ------------------------------------------------------------------
+        #region VM helper
+        private void Vm_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            // пример: если ViewModel будет публиковать ErrorOccurred, можно тут реагировать
+        }
+        #endregion
     }
 }

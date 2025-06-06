@@ -1,13 +1,19 @@
-﻿namespace Ynost.Models;
+﻿using System;
 
-public record AcademicYearResult(
-    string? Group,
-    string? AcademicPeriod, // Было int Year, формат "2024-2025"
-    string? Subject,
-    string? AvgSem1,        // Было double?
-    string? AvgSem2,        // Было double?
-    string? Dynamics,       // Было double?
-    string? AvgSuccessRate, // Было double?
-    string? AvgQualityRate, // Было double?
-    string? SouRate,        // Было double?
-    string? Link);
+namespace Ynost.Models;
+
+public class AcademicYearResult
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid TeacherId { get; set; }        // ← добавить
+    public string Group { get; set; } = string.Empty;
+    public string AcademicPeriod { get; set; } = string.Empty;
+    public string Subject { get; set; } = string.Empty;
+    public string AvgSem1 { get; set; } = string.Empty;
+    public string AvgSem2 { get; set; } = string.Empty;
+    public string Dynamics { get; set; } = string.Empty;
+    public string AvgSuccessRate { get; set; } = string.Empty;
+    public string AvgQualityRate { get; set; } = string.Empty;
+    public string SouRate { get; set; } = string.Empty;
+    public string Link { get; set; } = string.Empty;
+}

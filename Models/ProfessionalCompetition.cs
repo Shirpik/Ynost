@@ -1,7 +1,14 @@
-﻿namespace Ynost.Models;
-public record ProfessionalCompetition(
-    string? Level,
-    string? Name,
-    string? Achievement,
-    string? DateString, // Было DateTime Date
-    string? Link);
+﻿using System;
+
+namespace Ynost.Models;
+
+public class ProfessionalCompetition
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid TeacherId { get; set; }        // ← добавить
+    public string Level { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Achievement { get; set; } = string.Empty;
+    public string EventDate { get; set; } = string.Empty;
+    public string Link { get; set; } = string.Empty;
+}

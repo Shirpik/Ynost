@@ -1,6 +1,13 @@
-﻿namespace Ynost.Models;
-public record Mentorship(
-    string? Trainee,
-    string? Order,
-    string? OrderDateString, // Было DateTime OrderDate
-    string? Link);
+﻿using System;
+
+namespace Ynost.Models;
+
+public class Mentorship
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid TeacherId { get; set; }        // ← добавить
+    public string Trainee { get; set; } = string.Empty;
+    public string OrderNo { get; set; } = string.Empty;
+    public string OrderDate { get; set; } = string.Empty;
+    public string Link { get; set; } = string.Empty;
+}

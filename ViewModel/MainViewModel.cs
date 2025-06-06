@@ -15,7 +15,7 @@ namespace Ynost.ViewModels
 {
     public partial class MainViewModel : ObservableObject 
     {
-        private readonly DatabaseService _db;
+        private readonly DatabaseService   _db;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(CanEditData))]
@@ -67,9 +67,10 @@ namespace Ynost.ViewModels
         public IRelayCommand SaveChangesCommand { get; }
         public IRelayCommand ToggleLoginCommand { get; }
 
-        public MainViewModel(DatabaseService db)
+        public MainViewModel()          // ← ПАРАМЕТРОВ НЕТ
         {
-            _db = db;
+            _db = App.Db;               // берём уже созданный сервис
+        
 
             RetryConnectionCommand = new AsyncRelayCommand(LoadDataAsync, CanRetryConnection);
             SaveChangesCommand = new RelayCommand(ExecuteSaveChanges, CanExecuteSaveChanges);
@@ -164,23 +165,51 @@ namespace Ynost.ViewModels
             return IsLoggedIn && !IsDatabaseConnected && !IsLoading && !((AsyncRelayCommand)RetryConnectionCommand).IsRunning;
         }
 
-        private void ExecuteSaveChanges()
-        {
-            if (!IsDatabaseConnected)
-            {
-                Application.Current.Dispatcher.Invoke(() => MessageBox.Show("Нет соединения с базой данных для сохранения.", "Ошибка сохранения", MessageBoxButton.OK, MessageBoxImage.Warning));
-                return;
-            }
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                MessageBox.Show("Функция сохранения будет реализована позже.", "Сохранение", MessageBoxButton.OK, MessageBoxImage.Information);
-            });
-        }
-
         private bool CanExecuteSaveChanges()
         {
-            return CanEditData;
+            bool can = CanEditData;
+            Logger.Write($"[UI] CanExecuteSaveChanges → {can}");
+            return can;
         }
+
+        private async void ExecuteSaveChanges()
+        {
+            Logger.Write("=== ExecuteSaveChanges() entered ===");
+
+            if (!IsDatabaseConnected)
+            {
+                MessageBox.Show("Нет соединения с базой данных.", "Сохранение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Синхронизируем все VM → Model
+            foreach (var tvm in Teachers)
+                tvm.SyncToModel();
+
+            Logger.Write($"[UI] Calling SaveAllAsync() ...");
+            bool ok = await _db.SaveAllAsync(Teachers.Select(t => t.Model));
+
+            if (ok)
+            {
+                Logger.Write("[UI] SaveAllAsync returned true");
+                MessageBox.Show("Изменения сохранены.", "Сохранение", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                //  ─────────── дописываем ───────────
+                //  После успешного сохранения перезагрузим данные из БД,
+                //  чтобы в UI появились актуальные записи:
+                await LoadDataAsync();
+                //  ───────────────────────────────────
+            }
+            else
+            {
+                Logger.Write("[UI] SaveAllAsync returned **false**");
+                MessageBox.Show("Ошибка при сохранении.", "Сохранение", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+            Logger.Write("=== ExecuteSaveChanges() exit ===");
+        }
+
+
 
         public async Task LoadDataAsync()
         {
@@ -204,7 +233,7 @@ namespace Ynost.ViewModels
             LoadingStatus = "Загрузка данных...";
             IsUsingCache = false;
 
-            List<Teacher>? teacherModels = await _db.GetTeachersFromDbAsync();
+            List<Teacher>? teacherModels = await _db.LoadAllAsync();
 
             if (teacherModels != null)
             {
@@ -215,12 +244,14 @@ namespace Ynost.ViewModels
                     IsUsingCache = false;
                     ConnectionStatusText = $"Данные успешно загружены из БД. Записей: {Teachers.Count}.";
                 });
-                await _db.SaveTeachersToCacheAsync(teacherModels);
+
+                await _db.SaveToCacheAsync(teacherModels);
             }
             else
             {
                 IsDatabaseConnected = false;
-                List<Teacher>? cachedModels = await _db.LoadTeachersFromCacheAsync();
+                var cachedModels = await _db.LoadFromCacheAsync();
+
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     if (cachedModels != null && cachedModels.Count > 0)
@@ -248,24 +279,27 @@ namespace Ynost.ViewModels
 
         private void UpdateTeachersCollection(List<Teacher> newTeacherModels)
         {
-            int? previouslySelectedTeacherId = SelectedTeacher?.GetModelId();
+            // запоминаем, кто был выбран (Guid), если был
+            Guid? previouslySelectedTeacherId = SelectedTeacher?.Id;
+
             Teachers.Clear();
+
             if (newTeacherModels != null)
             {
                 foreach (var model in newTeacherModels)
-                {
                     Teachers.Add(new TeacherViewModel(model));
-                }
             }
 
+            // восстанавливаем выбор
             if (previouslySelectedTeacherId.HasValue)
             {
-                SelectedTeacher = Teachers.FirstOrDefault(tvm => tvm.GetModelId() == previouslySelectedTeacherId.Value);
+                SelectedTeacher = Teachers
+                    .FirstOrDefault(tvm => tvm.Id == previouslySelectedTeacherId.Value);
             }
+
+            // если ничего не выбрано, берём первого
             if (SelectedTeacher == null && Teachers.Count > 0)
-            {
                 SelectedTeacher = Teachers[0];
-            }
         }
     }
 }
