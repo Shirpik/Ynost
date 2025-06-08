@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Ynost.Converters" 
-    mc:Ignorable="d"
+        mc:Ignorable="d"
         Title="Ynost" Height="800" Width="1200"
         Loaded="MainWindow_Loaded"
         FontSize="16">
@@ -63,25 +63,24 @@
             <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#B0B0B0" ResizeBehavior="PreviousAndNext" ResizeDirection="Columns"/>
 
             <Grid Grid.Column="2">
-                <TextBlock Text="{Binding LoadingStatus}" FontSize="18" FontWeight="SemiBold"
+                <TextBlock Text="{Binding StatusText}" FontSize="18" FontWeight="SemiBold"
                            HorizontalAlignment="Center" VerticalAlignment="Center"
-                           Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisConverter}}"/>
+                           Visibility="{Binding IsLoadingOrSaving, Converter={StaticResource BoolToVisConverter}}"/>
 
                 <TextBlock Text="Войдите в систему для показа данных" FontSize="18" FontWeight="SemiBold"
                            HorizontalAlignment="Center" VerticalAlignment="Center"
                            Visibility="{Binding ShowLoginPrompt, Converter={StaticResource BoolToVisConverter}}"/>
 
                 <ScrollViewer x:Name="DetailsScrollViewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
-                              Visibility="{Binding ShowDataGrid, Converter={StaticResource BoolToVisConverter}}">
+                              Visibility="{Binding ShowDataContent, Converter={StaticResource BoolToVisConverter}}">
                     <StackPanel Margin="10" IsEnabled="{Binding CanEditData}">
 
                         <!-- 1. Итоговые результаты успеваемости (аттестат) -->
                         <TextBlock Text="1. Итоговые результаты успеваемости (аттестат)" FontWeight="Bold" Margin="0,8,0,4"/>
                         <DataGrid ItemsSource="{Binding SelectedTeacher.AcademicResults}" SelectedItem="{Binding SelectedTeacher.SelectedAcademicResult, Mode=TwoWay}" PreviewMouseWheel="DataGrid_PreviewMouseWheel" AutoGenerateColumns="False" Margin="0,0,0,0" CanUserAddRows="False" HorizontalScrollBarVisibility="Auto" MinRowHeight="25" 
                                   IsReadOnly="{Binding Path=DataContext.CanEditData, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource InverseBooleanConverter}}"
-                                  PreparingCellForEdit="DataGrid_PreparingCellForEdit" CellEditEnding="DataGrid_CellEditEnding" SelectionChanged="DataGrid_SelectionChanged">
+                                  PreparingCellForEdit="DataGrid_PreparingCellForEdit" CellEditEnding="DataGrid_CellEditEnding">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Группа" Binding="{Binding Group}" Width="90" MinWidth="80" ElementStyle="{StaticResource WrappedTextBlockCellStyle}" EditingElementStyle="{StaticResource EditingTextBoxStyle}"/>
                                 <DataGridTextColumn Header="Учебный год" Binding="{Binding AcademicPeriod}" Width="120" MinWidth="110" ElementStyle="{StaticResource WrappedTextBlockCellStyle}" EditingElementStyle="{StaticResource EditingTextBoxStyle}"/>
                                 <DataGridTextColumn Header="Предмет" Binding="{Binding Subject}" Width="200" MinWidth="180" ElementStyle="{StaticResource WrappedTextBlockCellStyle}" EditingElementStyle="{StaticResource EditingTextBoxStyle}"/>
                                 <DataGridTextColumn Header="Ср. балл 1 сем." Binding="{Binding AvgSem1}" Width="150" MinWidth="140" ElementStyle="{StaticResource WrappedTextBlockCellStyle}" EditingElementStyle="{StaticResource EditingTextBoxStyle}"/>
@@ -100,7 +99,7 @@
 
                         <!-- 2. Результаты государственной итоговой аттестации (ГИА) -->
                         <TextBlock Text="2. Результаты государственной итоговой аттестации (ГИА)" FontWeight="Bold" Margin="0,8,0,4"/>
-                        <DataGrid ItemsSource="{Binding SelectedTeacher.GiaResults}" SelectedItem="{Binding SelectedTeacher.SelectedGiaResult, Mode=TwoWay}" PreviewMouseWheel="DataGrid_PreviewMouseWheel" AutoGenerateColumns="False" Margin="0,0,0,0" CanUserAddRows="False" HorizontalScrollBarVisibility="Auto" MinRowHeight="25" IsReadOnly="{Binding Path=DataContext.CanEditData, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource InverseBooleanConverter}}" PreparingCellForEdit="DataGrid_PreparingCellForEdit" CellEditEnding="DataGrid_CellEditEnding" SelectionChanged="DataGrid_SelectionChanged_1">
+                        <DataGrid ItemsSource="{Binding SelectedTeacher.GiaResults}" SelectedItem="{Binding SelectedTeacher.SelectedGiaResult, Mode=TwoWay}" PreviewMouseWheel="DataGrid_PreviewMouseWheel" AutoGenerateColumns="False" Margin="0,0,0,0" CanUserAddRows="False" HorizontalScrollBarVisibility="Auto" MinRowHeight="25" IsReadOnly="{Binding Path=DataContext.CanEditData, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource InverseBooleanConverter}}" PreparingCellForEdit="DataGrid_PreparingCellForEdit" CellEditEnding="DataGrid_CellEditEnding">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Предмет" Binding="{Binding Subject}" Width="180" MinWidth="160" ElementStyle="{StaticResource WrappedTextBlockCellStyle}" EditingElementStyle="{StaticResource EditingTextBoxStyle}"/>
                                 <DataGridTextColumn Header="Группа" Binding="{Binding Group}" Width="90" MinWidth="80" ElementStyle="{StaticResource WrappedTextBlockCellStyle}" EditingElementStyle="{StaticResource EditingTextBoxStyle}"/>
@@ -322,8 +321,9 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <Button Grid.Column="2" Content="Сохранить" HorizontalAlignment="Center" Padding="10,3" Command="{Binding SaveChangesCommand}" Click="Button_Click"/>
-                <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left">
+                <Button Grid.Column="2" Content="Сохранить" HorizontalAlignment="Left" Padding="10,3" Command="{Binding SaveChangesCommand}"/>
+                <!-- Кнопка Сохранить теперь слева -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Content="{Binding LoginButtonText}" Padding="10,3" Command="{Binding ToggleLoginCommand}"/>
                     <TextBlock Text="{Binding UserStatusText}" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="SemiBold"
                                Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVisConverter}}"/>
@@ -349,6 +349,7 @@
                                         <Condition Binding="{Binding IsLoggedIn}" Value="True"/>
                                         <Condition Binding="{Binding IsDatabaseConnected}" Value="False"/>
                                         <Condition Binding="{Binding IsLoading}" Value="False"/>
+                                        <Condition Binding="{Binding IsSavingData}" Value="False"/>
                                     </MultiDataTrigger.Conditions>
                                     <Setter Property="Visibility" Value="Visible"/>
                                 </MultiDataTrigger>

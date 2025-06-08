@@ -18,6 +18,7 @@ namespace Ynost.Services
         private readonly string _cachePath;
         private const int TimeoutSec = 10;
 
+
         public DatabaseService(string connectionString)
         {
             _cs = connectionString;

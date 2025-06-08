@@ -3,34 +3,45 @@ using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using Ynost.Models;
 using Ynost.Services;
-using Ynost.ViewModels;
-using Ynost.View;
-using Ynost.Properties;
+using Ynost.ViewModels; // Убедись, что этот using есть для LoginResultRole
+using Ynost.View;    // Для LoginWindow
+using Ynost.Properties; // Для Settings
 
 namespace Ynost.ViewModels
 {
-    public partial class MainViewModel : ObservableObject 
+    public partial class MainViewModel : ObservableObject
     {
-        private readonly DatabaseService   _db;
+        private readonly DatabaseService _db;
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(CanEditData))]
-        [NotifyCanExecuteChangedFor(nameof(RetryConnectionCommand))]
-        private bool _isDatabaseConnected; 
-
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(ShowLoginPrompt))]
-        [NotifyPropertyChangedFor(nameof(ShowDataGrid))]
+        [NotifyPropertyChangedFor(nameof(ShowDataContent))] // Зависит от IsLoading
+        [NotifyPropertyChangedFor(nameof(ShowLoginPrompt))] // Зависит от IsLoading
+        [NotifyPropertyChangedFor(nameof(IsLoadingOrSaving))]
         private bool _isLoading;
-        [ObservableProperty]
-        private string _loadingStatus = "Инициализация...";
 
         [ObservableProperty]
-        private bool _isUsingCache; 
+        [NotifyPropertyChangedFor(nameof(ShowDataContent))] // Зависит от IsSavingData
+        [NotifyPropertyChangedFor(nameof(ShowLoginPrompt))] // Зависит от IsSavingData
+        [NotifyPropertyChangedFor(nameof(IsLoadingOrSaving))]
+        [NotifyCanExecuteChangedFor(nameof(SaveChangesCommand))]
+        private bool _isSavingData;
+
+        [ObservableProperty]
+        private string _statusText = "Инициализация...";
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(RetryConnectionCommand))]
+        [NotifyCanExecuteChangedFor(nameof(SaveChangesCommand))]
+        [NotifyPropertyChangedFor(nameof(CanEditData))] // CanEditData зависит от IsDatabaseConnected
+        private bool _isDatabaseConnected;
+
+        [ObservableProperty]
+        private bool _isUsingCache;
 
         [ObservableProperty]
         private string _connectionStatusText = "Определение статуса...";
@@ -43,74 +54,71 @@ namespace Ynost.ViewModels
         [NotifyPropertyChangedFor(nameof(LoginButtonText))]
         [NotifyPropertyChangedFor(nameof(UserStatusText))]
         [NotifyPropertyChangedFor(nameof(ShowLoginPrompt))]
-        [NotifyPropertyChangedFor(nameof(ShowDataGrid))]
+        [NotifyPropertyChangedFor(nameof(ShowDataContent))]
         [NotifyCanExecuteChangedFor(nameof(ToggleLoginCommand))]
         [NotifyCanExecuteChangedFor(nameof(RetryConnectionCommand))]
+        [NotifyPropertyChangedFor(nameof(CanEditData))] // CanEditData зависит от IsLoggedIn
         private bool _isLoggedIn;
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(CanEditData))]
         [NotifyPropertyChangedFor(nameof(UserStatusText))]
+        [NotifyPropertyChangedFor(nameof(CanEditData))] // CanEditData зависит от CurrentUserRole
         private LoginResultRole _currentUserRole = LoginResultRole.None;
 
         public string LoginButtonText => IsLoggedIn ? "Выйти" : "Войти";
         public string UserStatusText => IsLoggedIn ? $" (Роль: {CurrentUserRole})" : string.Empty;
 
-        public bool ShowLoginPrompt => !IsLoggedIn && !IsLoading;
-        public bool ShowDataGrid => IsLoggedIn && !IsLoading;
+        public bool IsLoadingOrSaving => IsLoading || IsSavingData;
+        public bool ShowLoginPrompt => !IsLoggedIn && !IsLoadingOrSaving;
+        public bool ShowDataContent => IsLoggedIn && !IsLoadingOrSaving;
 
         public ObservableCollection<TeacherViewModel> Teachers { get; } = new();
         [ObservableProperty]
         private TeacherViewModel? selectedTeacher;
 
         public IAsyncRelayCommand RetryConnectionCommand { get; }
-        public IRelayCommand SaveChangesCommand { get; }
+        public IAsyncRelayCommand SaveChangesCommand { get; }
         public IRelayCommand ToggleLoginCommand { get; }
 
-        public MainViewModel()          // ← ПАРАМЕТРОВ НЕТ
+        public MainViewModel()
         {
-            _db = App.Db;               // берём уже созданный сервис
-        
+            _db = App.Db;
 
             RetryConnectionCommand = new AsyncRelayCommand(LoadDataAsync, CanRetryConnection);
-            SaveChangesCommand = new RelayCommand(ExecuteSaveChanges, CanExecuteSaveChanges);
+            SaveChangesCommand = new AsyncRelayCommand(ExecuteSaveChanges, CanExecuteSaveChanges);
             ToggleLoginCommand = new RelayCommand(ExecuteToggleLogin);
 
-            ConnectionStatusText = "Войдите в систему для начала работы.";
+            // Начальная установка статусов
             if (Settings.Default.RememberLastUser && !string.IsNullOrEmpty(Settings.Default.LastUsername))
             {
-
-                // проверка пароля (если он хранится хешированным)
-                // валидация сохраненного токена.
                 string savedUser = Settings.Default.LastUsername;
-                string savedPass = Settings.Default.LastPassword; 
+                string savedPass = Settings.Default.LastPassword;
 
-                if (savedUser == "admin" && savedPass == "admin") 
+                if (savedUser == "admin" && savedPass == "admin")
                 {
-                    IsLoggedIn = true;
-                    CurrentUserRole = LoginResultRole.Editor;
-                    ConnectionStatusText = $"Автоматический вход как {savedUser}. Загрузка данных...";
+                    IsLoggedIn = true; CurrentUserRole = LoginResultRole.Editor;
+                    StatusText = $"Автоматический вход как {savedUser}. Загрузка данных...";
+                    ConnectionStatusText = StatusText;
                     _ = LoadDataAsync();
                 }
                 else if (savedUser == "view" && savedPass == "view")
                 {
-                    IsLoggedIn = true;
-                    CurrentUserRole = LoginResultRole.Viewer;
-                    ConnectionStatusText = $"Автоматический вход как {savedUser}. Загрузка данных...";
+                    IsLoggedIn = true; CurrentUserRole = LoginResultRole.Viewer;
+                    StatusText = $"Автоматический вход как {savedUser}. Загрузка данных...";
+                    ConnectionStatusText = StatusText;
                     _ = LoadDataAsync();
                 }
                 else
                 {
-                    Settings.Default.RememberLastUser = false;
-                    Settings.Default.LastUsername = string.Empty;
-                    Settings.Default.LastPassword = string.Empty;
-                    Settings.Default.Save();
-                    ConnectionStatusText = "Войдите в систему для начала работы.";
+                    Settings.Default.RememberLastUser = false; Settings.Default.LastUsername = string.Empty; Settings.Default.LastPassword = string.Empty; Settings.Default.Save();
+                    StatusText = "Войдите в систему для начала работы.";
+                    ConnectionStatusText = StatusText;
                 }
             }
             else
             {
-                ConnectionStatusText = "Войдите в систему для начала работы.";
+                StatusText = "Войдите в систему для начала работы.";
+                ConnectionStatusText = StatusText;
             }
             UpdateCanEditDataProperty();
         }
@@ -119,118 +127,104 @@ namespace Ynost.ViewModels
         {
             if (IsLoggedIn)
             {
-                var result = MessageBox.Show("Вы точно хотите выйти из аккаунта?", "Подтверждение выхода",
-                                             MessageBoxButton.YesNo, MessageBoxImage.Question);
+                var result = MessageBox.Show("Вы точно хотите выйти из аккаунта?", "Подтверждение выхода", MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (result == MessageBoxResult.Yes)
                 {
-                    IsLoggedIn = false;
-                    CurrentUserRole = LoginResultRole.None;
-                    IsDatabaseConnected = false;
+                    IsLoggedIn = false; CurrentUserRole = LoginResultRole.None;
+                    IsDatabaseConnected = false; // Сбрасываем при выходе
                     Teachers.Clear();
-                    ConnectionStatusText = "Вы вышли из системы. Войдите для доступа к данным.";
-                    LoadingStatus = ConnectionStatusText;
+                    StatusText = "Вы вышли из системы. Войдите для доступа к данным.";
+                    ConnectionStatusText = StatusText;
                     UpdateCanEditDataProperty();
-                    ((AsyncRelayCommand)RetryConnectionCommand).NotifyCanExecuteChanged();
                 }
             }
             else
             {
                 var loginWindow = new LoginWindow { Owner = Application.Current.MainWindow };
                 var loginVmContext = loginWindow.DataContext as LoginViewModel;
-
                 bool? dialogResult = loginWindow.ShowDialog();
-                if (dialogResult == true)
+                if (dialogResult == true && loginVmContext != null && loginVmContext.LoginSuccessful)
                 {
-                    if (loginVmContext != null && loginVmContext.LoginSuccessful)
-                    {
-                        IsLoggedIn = true;
-                        CurrentUserRole = loginVmContext.AuthenticatedUserRole;
-                        _ = LoadDataAsync();
-                    }
+                    IsLoggedIn = true; CurrentUserRole = loginVmContext.AuthenticatedUserRole;
+                    IsDatabaseConnected = false; // Сбрасываем перед загрузкой
+                    IsUsingCache = false;
+                    _ = LoadDataAsync();
                 }
             }
-            OnPropertyChanged(nameof(ShowLoginPrompt));
-            OnPropertyChanged(nameof(ShowDataGrid));
         }
 
         private void UpdateCanEditDataProperty()
         {
-            // соединение с БД установлено, пользователь вошел и у него есть права редактора
             CanEditData = IsDatabaseConnected && IsLoggedIn && CurrentUserRole == LoginResultRole.Editor;
         }
 
         private bool CanRetryConnection()
         {
-            // вошли в систему, но нет соединения с БД И не идет загрузка
-            return IsLoggedIn && !IsDatabaseConnected && !IsLoading && !((AsyncRelayCommand)RetryConnectionCommand).IsRunning;
+            return IsLoggedIn && !IsDatabaseConnected && !IsLoading && !IsSavingData && !RetryConnectionCommand.IsRunning;
+        }
+
+        private async Task ExecuteSaveChanges()
+        {
+            if (!IsDatabaseConnected)
+            {
+                MessageBox.Show("Нет соединения с базой данных для сохранения.", "Сохранение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            IsSavingData = true;
+            StatusText = "Идет сохранение данных...";
+            Logger.Write("=== ExecuteSaveChanges() entered ===");
+            bool ok = false;
+            try
+            {
+                foreach (var tvm in Teachers) tvm.SyncToModel();
+                Logger.Write($"[UI] Calling SaveAllAsync() ...");
+                ok = await _db.SaveAllAsync(Teachers.Select(t => t.Model).ToList());
+
+                if (ok)
+                {
+                    Logger.Write("[UI] SaveAllAsync returned true");
+                    MessageBox.Show("Изменения сохранены.", "Сохранение", MessageBoxButton.OK, MessageBoxImage.Information);
+                    await LoadDataAsync(); // Перезагружаем данные после успешного сохранения
+                }
+                else
+                {
+                    Logger.Write("[UI] SaveAllAsync returned **false**");
+                    MessageBox.Show("Ошибка при сохранении.", "Сохранение", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Write(ex, "ExecuteSaveChanges Exception");
+                MessageBox.Show($"Произошла ошибка при сохранении: {ex.Message}", "Ошибка сохранения", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsSavingData = false;
+                StatusText = ok ? "Данные успешно сохранены и обновлены." : (IsDatabaseConnected ? "Ошибка при сохранении." : ConnectionStatusText);
+            }
+            Logger.Write("=== ExecuteSaveChanges() exit ===");
         }
 
         private bool CanExecuteSaveChanges()
         {
-            bool can = CanEditData;
-            Logger.Write($"[UI] CanExecuteSaveChanges → {can}");
-            return can;
+            return CanEditData && !IsSavingData;
         }
-
-        private async void ExecuteSaveChanges()
-        {
-            Logger.Write("=== ExecuteSaveChanges() entered ===");
-
-            if (!IsDatabaseConnected)
-            {
-                MessageBox.Show("Нет соединения с базой данных.", "Сохранение", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            // Синхронизируем все VM → Model
-            foreach (var tvm in Teachers)
-                tvm.SyncToModel();
-
-            Logger.Write($"[UI] Calling SaveAllAsync() ...");
-            bool ok = await _db.SaveAllAsync(Teachers.Select(t => t.Model));
-
-            if (ok)
-            {
-                Logger.Write("[UI] SaveAllAsync returned true");
-                MessageBox.Show("Изменения сохранены.", "Сохранение", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                //  ─────────── дописываем ───────────
-                //  После успешного сохранения перезагрузим данные из БД,
-                //  чтобы в UI появились актуальные записи:
-                await LoadDataAsync();
-                //  ───────────────────────────────────
-            }
-            else
-            {
-                Logger.Write("[UI] SaveAllAsync returned **false**");
-                MessageBox.Show("Ошибка при сохранении.", "Сохранение", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-
-            Logger.Write("=== ExecuteSaveChanges() exit ===");
-        }
-
-
 
         public async Task LoadDataAsync()
         {
             if (!IsLoggedIn)
             {
-                Teachers.Clear();
-                ConnectionStatusText = "Войдите в систему для загрузки данных.";
-                LoadingStatus = ConnectionStatusText;
-                IsLoading = false;
-                IsDatabaseConnected = false;
-                UpdateCanEditDataProperty();
-                ((AsyncRelayCommand)RetryConnectionCommand).NotifyCanExecuteChanged();
-                OnPropertyChanged(nameof(ShowLoginPrompt));
-                OnPropertyChanged(nameof(ShowDataGrid));
+                Teachers.Clear(); IsDatabaseConnected = false; UpdateCanEditDataProperty();
+                StatusText = "Войдите в систему для загрузки данных."; ConnectionStatusText = StatusText;
+                IsLoading = false; OnPropertyChanged(nameof(ShowLoginPrompt)); OnPropertyChanged(nameof(ShowDataContent));
                 return;
             }
 
-            if (((AsyncRelayCommand)RetryConnectionCommand).IsRunning) return;
+            if (IsLoading || IsSavingData || RetryConnectionCommand.IsRunning) return;
 
             IsLoading = true;
-            LoadingStatus = "Загрузка данных...";
+            StatusText = "Загрузка данных...";
             IsUsingCache = false;
 
             List<Teacher>? teacherModels = await _db.LoadAllAsync();
@@ -240,66 +234,50 @@ namespace Ynost.ViewModels
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     UpdateTeachersCollection(teacherModels);
-                    IsDatabaseConnected = true;
-                    IsUsingCache = false;
+                    IsDatabaseConnected = true; IsUsingCache = false;
                     ConnectionStatusText = $"Данные успешно загружены из БД. Записей: {Teachers.Count}.";
+                    StatusText = ConnectionStatusText;
                 });
-
                 await _db.SaveToCacheAsync(teacherModels);
             }
             else
             {
-                IsDatabaseConnected = false;
-                var cachedModels = await _db.LoadFromCacheAsync();
-
-                await Application.Current.Dispatcher.InvokeAsync(() =>
+                await Application.Current.Dispatcher.InvokeAsync(async () => // Сделали лямбду асинхронной
                 {
+                    IsDatabaseConnected = false;
+                    List<Teacher>? cachedModels = await _db.LoadFromCacheAsync(); // await здесь
                     if (cachedModels != null && cachedModels.Count > 0)
                     {
-                        UpdateTeachersCollection(cachedModels);
-                        IsUsingCache = true;
+                        UpdateTeachersCollection(cachedModels); IsUsingCache = true;
                         ConnectionStatusText = "Ошибка соединения с БД. Отображаются данные из кеша.";
                     }
                     else
                     {
-                        Teachers.Clear();
-                        IsUsingCache = false;
+                        Teachers.Clear(); IsUsingCache = false;
                         ConnectionStatusText = "Ошибка соединения с БД. Кеш пуст или недоступен.";
                     }
+                    StatusText = ConnectionStatusText;
                 });
             }
 
             IsLoading = false;
-            LoadingStatus = ConnectionStatusText; 
             UpdateCanEditDataProperty();
+            // Обновляем CanExecute команд явно, так как IsLoading изменился
             ((AsyncRelayCommand)RetryConnectionCommand).NotifyCanExecuteChanged();
+            ((AsyncRelayCommand)SaveChangesCommand).NotifyCanExecuteChanged(); // SaveChangesCommand тоже может зависеть от IsLoading косвенно через CanEditData
             OnPropertyChanged(nameof(ShowLoginPrompt));
-            OnPropertyChanged(nameof(ShowDataGrid));
+            OnPropertyChanged(nameof(ShowDataContent));
         }
 
         private void UpdateTeachersCollection(List<Teacher> newTeacherModels)
         {
-            // запоминаем, кто был выбран (Guid), если был
             Guid? previouslySelectedTeacherId = SelectedTeacher?.Id;
-
             Teachers.Clear();
-
-            if (newTeacherModels != null)
-            {
-                foreach (var model in newTeacherModels)
-                    Teachers.Add(new TeacherViewModel(model));
-            }
-
-            // восстанавливаем выбор
-            if (previouslySelectedTeacherId.HasValue)
-            {
-                SelectedTeacher = Teachers
-                    .FirstOrDefault(tvm => tvm.Id == previouslySelectedTeacherId.Value);
-            }
-
-            // если ничего не выбрано, берём первого
-            if (SelectedTeacher == null && Teachers.Count > 0)
-                SelectedTeacher = Teachers[0];
+            if (newTeacherModels != null) { foreach (var model in newTeacherModels) Teachers.Add(new TeacherViewModel(model)); }
+            if (previouslySelectedTeacherId.HasValue) { SelectedTeacher = Teachers.FirstOrDefault(tvm => tvm.Id == previouslySelectedTeacherId.Value); }
+            if (SelectedTeacher == null && Teachers.Count > 0) { SelectedTeacher = Teachers[0]; }
         }
+
+        // Убрали Dispose, так как NetworkAvailabilityService удален
     }
 }
