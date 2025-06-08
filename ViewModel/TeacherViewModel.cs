@@ -68,10 +68,13 @@ namespace Ynost.ViewModels
                 Subject = "Новый предмет",
                 AvgSem1 = string.Empty,
                 AvgSem2 = string.Empty,
-                Dynamics = string.Empty,
+                DynamicsSem = string.Empty,
                 AvgSuccessRate = string.Empty,
+                DynamicsAvgSuccessRate = string.Empty,
                 AvgQualityRate = string.Empty,
-                SouRate = string.Empty,
+                DynamicsAvgQualityRate = string.Empty,
+                EntrySouRate = string.Empty,
+                ExitSouRate= string.Empty,
                 Link = string.Empty
             });
         }
@@ -107,10 +110,10 @@ namespace Ynost.ViewModels
                 Subject = "Предмет ГИА",
                 Group = "Группа",
                 TotalParticipants = "0",
-                PctMark5 = string.Empty,
-                PctMark4 = string.Empty,
-                PctMark3 = string.Empty,
-                PctFail = string.Empty,
+                Count5 = string.Empty,
+                Count4 = string.Empty,
+                Count3 = string.Empty,
+                Count2 = string.Empty,
                 AvgScore = string.Empty,
                 Link = string.Empty
             });
@@ -147,10 +150,10 @@ namespace Ynost.ViewModels
                 Subject = "Компетенция ДЭ",
                 Group = "Группа",
                 TotalParticipants = "0",
-                PctMark5 = string.Empty,
-                PctMark4 = string.Empty,
-                PctMark3 = string.Empty,
-                PctMark2 = string.Empty,
+                Count5 = string.Empty,
+                Count4 = string.Empty,
+                Count3 = string.Empty,
+                Count2 = string.Empty,
                 AvgScore = string.Empty,
                 Link = string.Empty
             });
@@ -190,9 +193,9 @@ namespace Ynost.ViewModels
                 StudentsTotal = string.Empty,
                 StudentsParticipated = string.Empty,
                 StudentsPassed = string.Empty,
-                PerformanceRate = string.Empty,
-                LearningQualityRate = string.Empty,
-                SouRate = string.Empty,
+                Count5 = string.Empty,
+                Count4 = string.Empty,
+                Count3 = string.Empty,
                 Link = string.Empty
             });
         }

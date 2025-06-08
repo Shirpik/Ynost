@@ -5,27 +5,27 @@ namespace Ynost.Models
     // 1. Итоговые результаты успеваемости
     public record AcademicYearResultDb(
         Guid Id, Guid TeacherId, string Group, string AcademicPeriod, string Subject,
-        string AvgSem1, string AvgSem2, string Dynamics, string AvgSuccessRate,
-        string AvgQualityRate, string SouRate, string Link);
+        string AvgSem1, string ResultATest, string AvgSem2, string DynamicsSem, string AvgSuccessRate, string DynamicsAvgSuccessRate,
+        string AvgQualityRate, string DynamicsAvgQualityRate, string EntrySouRate, string ExitSouRate, string Link);
 
     // 2. ГИА
     public record GiaResultDb(
         Guid Id, Guid TeacherId, string Subject, string Group, string TotalParticipants,
-        string PctMark5, string PctMark4, string PctMark3, string PctFail,
+        string Count5, string Count4, string Count3, string Count2,
         string AvgScore, string Link);
 
     // 3. ДЭ
     public record DemoExamResultDb(
         Guid Id, Guid TeacherId, string Subject, string Group, string TotalParticipants,
-        string PctMark5, string PctMark4, string PctMark3, string PctMark2,
+        string Count5, string Count4, string Count3, string Count2,
         string AvgScore, string Link);
 
     // 4. Независимая оценка
     public record IndependentAssessmentDb(
         Guid Id, Guid TeacherId, string AssessmentName, string AssessmentDate,
         string ClassSubject, string StudentsTotal, string StudentsParticipated,
-        string StudentsPassed, string PerformanceRate, string LearningQualityRate,
-        string SouRate, string Link);
+        string StudentsPassed, string Count5, string Count4, string Count3, string Count2,
+        string Link);
 
     // 5. Раннее самоопределение
     public record SelfDeterminationActivityDb(
